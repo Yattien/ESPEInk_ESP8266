@@ -33,7 +33,7 @@ WiFiClient espClient;
 PubSubClient mqttClient(espClient);
 
 // -----------------------------------------------------------------------------------------------------
-const int FW_VERSION = 9; // for OTA
+const int FW_VERSION = 10; // for OTA
 // -----------------------------------------------------------------------------------------------------
 const char *AP_NAME = "ESPEInk-APSetup";
 const char *MQTT_CLIENT_NAME = "ESPEInk";
@@ -44,7 +44,6 @@ bool shouldSaveConfig = false;
 bool isUpdateAvailable = false;
 bool isDisplayUpdateRunning = false;
 bool isMqttEnabled = false;
-unsigned long startCycle;
 
 class Ctx {
 public:
@@ -120,6 +119,8 @@ Ctx ctx;
 // -----------------------------------------------------------------------------------------------------
 void setup() {
 	Serial.begin(115200);
+	pinMode(LED_BUILTIN, OUTPUT);
+	digitalWrite(LED_BUILTIN, HIGH);
 
 	getConfig(&ctx);
 
@@ -251,7 +252,7 @@ void getUpdate() {
 		Serial.printf(" current firmware version: %d, available version: %s", FW_VERSION, newFWVersion.c_str());
 		int newVersion = newFWVersion.toInt();
 		if (newVersion > FW_VERSION) {
-			Serial.println(" preparing to update");
+			Serial.println(" updating...");
 			String firmwareImageUrl = firmwareUrl;
 			firmwareImageUrl.concat(".bin");
 			t_httpUpdate_return ret = ESPhttpUpdate.update(firmwareImageUrl);
@@ -271,7 +272,7 @@ void getUpdate() {
 
 	} else if (httpCode == 404) {
 		Serial.println(" no firmware version file found");
-		
+
 	} else {
 		Serial.printf(" firmware version check failed, got HTTP response code %d\n", httpCode);
 	}
@@ -315,6 +316,15 @@ void loop() {
 		}
 	}
 
+	static unsigned long startCycle = ESP.getCycleCount();
+	unsigned long currentCycle = ESP.getCycleCount();
+	unsigned long difference;
+	if (currentCycle < startCycle) {
+		difference = (4294967295 - startCycle + currentCycle);
+	} else {
+		difference = (currentCycle - startCycle);
+	}
+
 	static bool serverStarted = false;
 	if (!serverStarted) {
 		initializeWebServer();
@@ -325,24 +335,24 @@ void loop() {
 			mqttClient.publish(ctx.mqttCommandTopic, "true");
 			isUpdateAvailable = false;
 		}
-		Serial.println("Webserver started, waiting 10s for Updates");
-		startCycle = ESP.getCycleCount();
+		Serial.println("Webserver started, waiting 10s for updates");
 
 	} else {
 		server.handleClient();
-		delay(10);
+
+		int decile = fmod(difference / (TICKS_PER_SECOND / 100.0), 100.0);
+		static bool ledStatus = false;
+		if (!ledStatus && decile == 95) {
+			digitalWrite(LED_BUILTIN, LOW);
+			ledStatus = true;
+		} else if (ledStatus && decile == 0) {
+			digitalWrite(LED_BUILTIN, HIGH);
+			ledStatus = false;
+		}
 	}
 
 	bool isTimeToSleep = false;
 	if (!isTimeToSleep && ctx.sleepTime > 0) { // check if 10 seconds have passed
-		unsigned long currentCycle = ESP.getCycleCount();
-		unsigned long difference;
-		// handle overflow of micros(), happens every 54 seconds on a 80-MHz board
-		if (currentCycle < startCycle) {
-			difference = (4294967295 - startCycle + currentCycle);
-		} else {
-			difference = (currentCycle - startCycle);
-		}
 		if (difference > 10 * TICKS_PER_SECOND) {
 			isTimeToSleep = true;
 		}
