@@ -7,25 +7,25 @@ Experimentell
 # Features
 * **Einrichtungsmanager** für WiFi, MQTT und Deepsleep-Zeit
   - Verbinden mit dem AP `ESPEInk-APSetup` und im Browser die URL `http://192.168.4.1` aufrufen
-  - MQTT-Server ist optional, falls keiner angegeben wird, wird kein MQTT verwendet
-  - Sleeptime in Sekunden ist optional, wird keine angegeben, läuft der ESP ständig
-  - Firmware-Basis-URL ist optional
-  - die Einrichtungsdaten werden damit im ESP gespeichert und nicht mehr im Quellcode
+  - MQTT-Server ist _optional_, falls keiner angegeben wird, wird kein MQTT verwendet
+  - Sleeptime in Sekunden ist _optional_, wird keine angegeben, läuft der ESP ständig (=ähnlich der Original-Firmware)
+  - Firmware-Basis-URL ist _optional_, wird keine angegeben, wird keine OTA-Update-Anfrage durchgeführt
+  - die Einrichtungsdaten werden im ESP gespeichert und nicht mehr im Quellcode; sie sind damit auch nach einem Update noch verfügbar
 * **OTA-Firmware-Update**
   - unterhalb der Firmware-Basis-URL werden zwei Dateien erwartet, Hauptnamensbestandteil ist die klein geschriebene (WiFi-)MAC-Adresse des ESP
-  - "<MAC>.version" eine Datei, die nur eine Zahl enthält, das ist die Versionsnummer des zugehörigen Firmwareimages
-  - "<MAC>.bin" das Firmware-Image
+  - `<MAC>.version` eine Datei, die nur eine Zahl, die Versionsnummer des zugehörigen Firmwareimages, enthält
+  - `<MAC>.bin` das Firmware-Image
   - ein Update erfolgt nur, wenn die aktuelle Versionsnummer kleiner als die auf dem Webserver ist (ja, ist derzeit viel Handarbeit :wink:)
 * **Deepsleep**
-  - der ESP-Webserver wird 10s für Aktionen gestartet, danach geht er schlafen, falls eine Schlafdauer konfiguriert ist
-  - wird ein manueller Upload über die Webseite oder ein ESPEInk-Upload gestartet, wird der Schlaf solange verzögert
-* **MQTT-Szenario**, wie u.a. beschrieben.
-  - Funktioniert nicht (:warning:) standalone, benötigt also eine eingerichtete FHEM-Gegenseite
-* **Reset-Seite** `http://<esp>/reset`, um den Einrichtungsassistenten (ohne Rückfrage) zu starten, die Wifi-Verbindungsdaten müssen erneut eingegeben werden
+  - der ESP-Webserver wird 10s für Aktionen gestartet, danach geht er schlafen - falls eine Schlafdauer konfiguriert ist
+  - wird ein manueller Upload über die Webseite oder ein ESPEInk-Upload gestartet, wird der Schlaf solange verzögert, bis das `SHOW`-Kommando zurückkehrt oder über die Abort-Seite abgebrochen wird
+* **MQTT-Szenario**, wie unten stehend beschrieben
+  - Funktioniert nicht :warning: standalone, benötigt also eine eingerichtete FHEM-Gegenseite
+* **Reset-Seite** `http://<esp>/reset`, um den Einrichtungsassistenten (ohne Rückfrage) zu starten; die Wifi-Verbindungsdaten müssen erneut eingegeben werden
 * **Abort-Seite** `http://<esp>/abort`, um einen verzögerten Schlaf (bspw. abgebrochener manueller Upload) sofort auszulösen 
 
 # Abhängigkeiten
-Da ich bereits viele Libs in meiner Arduino-Bauumgebung habe und diese somit nicht mehr clean ist, können es auch mehr Abhängigkeiten sein, die zusätzlich installiert werden müssen. Für Tipps bin ich dankbar :)
+Da ich bereits viele Libs in meiner Arduino-Bauumgebung habe und diese somit nicht mehr "clean" ist, können es auch mehr Abhängigkeiten sein, die zusätzlich installiert werden müssen. Für Tipps bin ich dankbar :)
 
 * ArduinoJSON >=6
 * WiFiManager
@@ -33,7 +33,7 @@ Da ich bereits viele Libs in meiner Arduino-Bauumgebung habe und diese somit nic
 
 # MQTT-Szenario
 Im Zusammenspiel mit dem FHEM-Modul `ESPEInk` kann man das EInk-Display dazu bringen, weniger Strom zu verbrauchen. Dazu kann man so vorgehen:
-* das Attribut `interval` in ESPEInk steht auf einem hohen Wert, da kein automatischer Upload erfolgen soll
+* das Attribut `interval` in ESPEInk steht auf einem hohen Wert, da kein automatischer Upload erfolgen soll (noch notwendiger Workaround)
 * ein DOIF triggert die Konvertierung
 * ein weiteres DOIF reagiert auf Änderungen im ESPEInk-Reading `result_picture` und setzt das MQTT-Topic `stat/display/needUpdate` mit dem QOS 1 (=wird im MQTT-Server zwischengespeichert, solange der ESP schläft)
 * ein MQTT_DEVICE wartet auf das ESP-Signal im Topic `cmd/display/upload`
@@ -42,7 +42,7 @@ Im Zusammenspiel mit dem FHEM-Modul `ESPEInk` kann man das EInk-Display dazu bri
 * das MQTT_DEVICE reagiert darauf und startet den ESPEink-upload
     
 ## Benötigt wird
-* ESPEInk    
+* ein eingerichtetes und funktionierendes FHEM-Modul `ESPEInk`
 	```
 	defmod display ESPEInk /opt/fhem/www/images/displayBackground.png
 	attr display boardtype ESP8266
