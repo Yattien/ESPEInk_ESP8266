@@ -1,5 +1,5 @@
 # ESPEInk-ESP8266
-Erweiterung des ESP8266-Waveshare-Treibers (Vertrieb von EInk-Displays) um Wifi-Einrichtungsassistent, Deepsleep und MQTT-Funktionalität als Ergänzung zum FHEM-Modul `ESPEInk`.
+Erweiterung des ESP8266-Waveshare-Treibers um Wifi-Einrichtungsassistent, Deepsleep und MQTT-Funktionalität als Ergänzung zum FHEM-Modul `ESPEInk`.
 
 # Status
 Experimentell
