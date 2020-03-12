@@ -34,7 +34,7 @@ WiFiClient espClient;
 PubSubClient mqttClient(espClient);
 
 // -----------------------------------------------------------------------------------------------------
-const int FW_VERSION = 10; // for OTA
+const int FW_VERSION = 11; // for OTA
 // -----------------------------------------------------------------------------------------------------
 const char *AP_NAME = "ESPEInk-APSetup";
 const char *MQTT_CLIENT_NAME = "ESPEInk";
@@ -61,12 +61,11 @@ void setup() {
 	ctx.updateParameters();
 	isMqttEnabled = ctx.isMqttEnabled();
 
-
-	Serial.printf(" MQTT Server: %s:%d\n", ctx.mqttServer, ctx.mqttPort);
-	Serial.printf(" MQTT UpdateStatusTopic: %s\n", ctx.mqttUpdateStatusTopic);
-	Serial.printf(" MQTT CommandTopic: %s\n", ctx.mqttCommandTopic);
-	Serial.printf(" sleep time: %ld\n", ctx.sleepTime);
-	Serial.printf(" firmware base URL: %s\n", ctx.firmwareUrl);
+	Serial.printf(" MQTT Server: %s:%d\r\n", ctx.mqttServer, ctx.mqttPort);
+	Serial.printf(" MQTT UpdateStatusTopic: %s\r\n", ctx.mqttUpdateStatusTopic);
+	Serial.printf(" MQTT CommandTopic: %s\r\n", ctx.mqttCommandTopic);
+	Serial.printf(" sleep time: %ld\r\n", ctx.sleepTime);
+	Serial.printf(" firmware base URL: %s\r\n", ctx.firmwareUrl);
 	saveConfig(ctx);
 
 	getUpdate();
@@ -177,7 +176,7 @@ void getUpdate() {
 	String firmwareVersionUrl = firmwareUrl;
 	firmwareVersionUrl.concat(".version");
 
-	Serial.printf("Checking for firmware update, version file '%s'.\n", firmwareVersionUrl.c_str());
+	Serial.printf("Checking for firmware update, version file '%s'.\r\n", firmwareVersionUrl.c_str());
 	HTTPClient httpClient;
 	httpClient.begin(firmwareVersionUrl);
 	int httpCode = httpClient.GET();
@@ -193,11 +192,11 @@ void getUpdate() {
 
 			switch (ret) {
 				case HTTP_UPDATE_FAILED:
-					Serial.printf(" update failed: (%d): %s\n", ESPhttpUpdate.getLastError(), ESPhttpUpdate.getLastErrorString().c_str());
+					Serial.printf(" update failed: (%d): %s\r\n", ESPhttpUpdate.getLastError(), ESPhttpUpdate.getLastErrorString().c_str());
 					break;
 
 				case HTTP_UPDATE_NO_UPDATES:
-					Serial.printf(" update file '%s' found\n", firmwareImageUrl.c_str());
+					Serial.printf(" update file '%s' found\r\n", firmwareImageUrl.c_str());
 					break;
 			}
 		} else {
@@ -208,7 +207,7 @@ void getUpdate() {
 		Serial.println(" no firmware version file found");
 
 	} else {
-		Serial.printf(" firmware version check failed, got HTTP response code %d\n", httpCode);
+		Serial.printf(" firmware version check failed, got HTTP response code %d\r\n", httpCode);
 	}
 	httpClient.end();
 }
@@ -259,29 +258,30 @@ void loop() {
 		difference = (currentCycle - startCycle);
 	}
 
-	static bool serverStarted = false;
-	if (!serverStarted) {
-		initializeWebServer();
-		server.begin();
-		serverStarted = true;
+	if ((isMqttEnabled && isUpdateAvailable) || !isMqttEnabled) {
+		static bool serverStarted = false;
+		if (!serverStarted) {
+			initializeWebServer();
+			server.begin();
+			serverStarted = true;
 
-		if (isUpdateAvailable) {
-			mqttClient.publish(ctx.mqttCommandTopic, "true");
-			isUpdateAvailable = false;
-		}
-		Serial.println("Webserver started, waiting 10s for updates");
+			if (isUpdateAvailable) {
+				mqttClient.publish(ctx.mqttCommandTopic, "true");
+			}
+			Serial.printf("Webserver started, waiting %sfor updates\r\n", isMqttEnabled ? "" : "10s ");
 
-	} else {
-		server.handleClient();
+		} else {
+			server.handleClient();
 
-		int decile = fmod(difference / (TICKS_PER_SECOND / 100.0), 100.0);
-		static bool ledStatus = false;
-		if (!ledStatus && decile == 95) {
-			digitalWrite(LED_BUILTIN, LOW);
-			ledStatus = true;
-		} else if (ledStatus && decile == 0) {
-			digitalWrite(LED_BUILTIN, HIGH);
-			ledStatus = false;
+			int decile = fmod(difference / (TICKS_PER_SECOND / 100.0), 100.0);
+			static bool ledStatus = false;
+			if (!ledStatus && decile == 95) {
+				digitalWrite(LED_BUILTIN, LOW);
+				ledStatus = true;
+			} else if (ledStatus && decile == 0) {
+				digitalWrite(LED_BUILTIN, HIGH);
+				ledStatus = false;
+			}
 		}
 	}
 
@@ -300,7 +300,7 @@ void loop() {
 	}
 
 	if (!isDisplayUpdateRunning && isTimeToSleep) {
-		Serial.printf("Going to sleep for %ld seconds.\n", ctx.sleepTime);
+		Serial.printf("Going to sleep for %ld seconds.\r\n", ctx.sleepTime);
 		ESP.deepSleep(ctx.sleepTime * 1000000);
 		delay(100);
 	}
@@ -308,7 +308,7 @@ void loop() {
 
 // -----------------------------------------------------------------------------------------------------
 void factoryReset() {
-	server.send(200, "text/plain", "Resetting WLAN settings...\r\n");
+	server.send(200, "text/plain", "Resetting WLAN settings...\r\r\n");
 	delay(200);
 
 	WiFiManager wifiManager;
@@ -347,9 +347,9 @@ void reconnect() {
 		} else {
 			boolean rc = mqttClient.subscribe(ctx.mqttUpdateStatusTopic, 1);
 			if (rc) {
-				Serial.printf(" subscribed to %s\n", ctx.mqttUpdateStatusTopic);
+				Serial.printf(" subscribed to %s\r\n", ctx.mqttUpdateStatusTopic);
 			} else {
-				Serial.printf(" subscription to %s failed: %d\n", ctx.mqttUpdateStatusTopic, rc);
+				Serial.printf(" subscription to %s failed: %d\r\n", ctx.mqttUpdateStatusTopic, rc);
 			}
 		}
 	}
