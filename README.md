@@ -31,6 +31,18 @@ Da ich bereits viele Libs in meiner Arduino-Bauumgebung habe und diese somit nic
 * WiFiManager
 * ?
 
+# Pin-Belegung Lolin/Wemos D1 mini
+e-Paper HAT|GPIO|Wemos D1
+--------------|---|--------
+CS|15|D8
+RST|2|D4
+DC|4|D2
+BUSY|5|D1
+DIN|13|D7
+CLK|14|D5
+GND|GND|G
+VCC|3.3V|3V3
+
 # MQTT-Szenario
 Im Zusammenspiel mit dem FHEM-Modul `ESPEInk` kann man das EInk-Display dazu bringen, weniger Strom zu verbrauchen. Dazu kann man so vorgehen:
 * das Attribut `interval` in ESPEInk steht auf einem hohen Wert, da kein automatischer Upload erfolgen soll (noch notwendiger Workaround)
