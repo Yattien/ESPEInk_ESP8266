@@ -34,10 +34,9 @@ WiFiClient espClient;
 PubSubClient mqttClient(espClient);
 
 // -----------------------------------------------------------------------------------------------------
-const int FW_VERSION = 11; // for OTA
+const int FW_VERSION = 12; // for OTA
 // -----------------------------------------------------------------------------------------------------
 const char *AP_NAME = "ESPEInk-APSetup";
-const char *MQTT_CLIENT_NAME = "ESPEInk";
 const char *CONFIG_FILE = "/config.json";
 const float TICKS_PER_SECOND = 80000000; // 80 MHz processor
 
@@ -55,13 +54,14 @@ void setup() {
 	digitalWrite(LED_BUILTIN, HIGH);
 
 	getConfig();
+	initMqttClientName();
 
 	ctx.initWifiManagerParameters();
 	setupWifi();
 	ctx.updateParameters();
 	isMqttEnabled = ctx.isMqttEnabled();
 
-	Serial.printf(" MQTT Server: %s:%d\r\n", ctx.mqttServer, ctx.mqttPort);
+	Serial.printf(" MQTT Server: %s:%d, Client: %s\r\n", ctx.mqttServer, ctx.mqttPort, ctx.mqttClientName);
 	Serial.printf(" MQTT UpdateStatusTopic: %s\r\n", ctx.mqttUpdateStatusTopic);
 	Serial.printf(" MQTT CommandTopic: %s\r\n", ctx.mqttCommandTopic);
 	Serial.printf(" sleep time: %ld\r\n", ctx.sleepTime);
@@ -90,6 +90,7 @@ void getConfig() {
 				if (!error) {
 					strlcpy(ctx.mqttServer, jsonDocument["mqttServer"] | "", sizeof ctx.mqttServer);
 					ctx.mqttPort = jsonDocument["mqttPort"] | 1883;
+					strlcpy(ctx.mqttClientName, jsonDocument["mqttClientName"] | "", sizeof ctx.mqttClientName);
 					strlcpy(ctx.mqttUpdateStatusTopic, jsonDocument["mqttUpdateStatusTopic"] | "", sizeof ctx.mqttUpdateStatusTopic);
 					strlcpy(ctx.mqttCommandTopic, jsonDocument["mqttCommandTopic"] | "", sizeof ctx.mqttCommandTopic);
 					ctx.sleepTime = jsonDocument["sleepTime"] | 0;
@@ -103,6 +104,13 @@ void getConfig() {
 		}
 	} else {
 		Serial.println("failed to mount FS");
+	}
+}
+
+// -----------------------------------------------------------------------------------------------------
+void initMqttClientName() {
+	if (!strlen(ctx.mqttClientName)) {
+		sprintf(ctx.mqttClientName, "ESPEInk_%s", getMAC().c_str());
 	}
 }
 
@@ -136,6 +144,7 @@ void saveConfig() {
 		DynamicJsonDocument jsonDocument(512);
 		jsonDocument["mqttServer"] = ctx.mqttServer;
 		jsonDocument["mqttPort"] = ctx.mqttPort;
+		jsonDocument["mqttClientName"] = ctx.mqttClientName;
 		jsonDocument["mqttUpdateStatusTopic"] = ctx.mqttUpdateStatusTopic;
 		jsonDocument["mqttCommandTopic"] = ctx.mqttCommandTopic;
 		jsonDocument["sleepTime"] = ctx.sleepTime;
@@ -342,7 +351,7 @@ void reconnect() {
 	Serial.println("Connecting to MQTT...");
 	while (!mqttClient.connected()) {
 		// clientID, username, password, willTopic, willQoS, willRetain, willMessage, cleanSession
-		if (!mqttClient.connect(MQTT_CLIENT_NAME, NULL, NULL, NULL, 0, 0, NULL, 0)) {
+		if (!mqttClient.connect(ctx.mqttClientName, NULL, NULL, NULL, 0, 0, NULL, 0)) {
 			delay(1000);
 		} else {
 			boolean rc = mqttClient.subscribe(ctx.mqttUpdateStatusTopic, 1);

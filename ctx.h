@@ -3,6 +3,7 @@ public:
 	Ctx() :
 			mqttPort(1883),
 					sleepTime(60) {
+		memset(mqttClientName, 0, 20);
 		strcpy(mqttUpdateStatusTopic, "stat/display/needUpdate");
 		strcpy(mqttCommandTopic, "cmd/display/upload");
 	}
@@ -51,6 +52,7 @@ public:
 	char mqttServer[40];
 	char mqttPortAsString[6];
 	int mqttPort;
+	char mqttClientName[21];
 	char mqttUpdateStatusTopic[128];
 	char mqttCommandTopic[128];
 	char sleepTimeAsString[33];
