@@ -34,7 +34,7 @@ WiFiClient espClient;
 PubSubClient mqttClient(espClient);
 
 // -----------------------------------------------------------------------------------------------------
-const int FW_VERSION = 12; // for OTA
+const int FW_VERSION = 13; // for OTA
 // -----------------------------------------------------------------------------------------------------
 const char *AP_NAME = "ESPEInk-APSetup";
 const char *CONFIG_FILE = "/config.json";

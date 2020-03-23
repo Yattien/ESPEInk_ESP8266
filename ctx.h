@@ -3,7 +3,7 @@ public:
 	Ctx() :
 			mqttPort(1883),
 					sleepTime(60) {
-		memset(mqttClientName, 0, 20);
+		memset(mqttClientName, 0, 21);
 		strcpy(mqttUpdateStatusTopic, "stat/display/needUpdate");
 		strcpy(mqttCommandTopic, "cmd/display/upload");
 	}
