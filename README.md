@@ -1,8 +1,14 @@
 # ESPEInk-ESP8266
 Erweiterung des ESP8266-Waveshare-Treibers um Wifi-Einrichtungsassistent, Deepsleep und MQTT-Funktionalität als Ergänzung zum FHEM-Modul `ESPEInk`.
 
-# Status
-Experimentell
+[![GitHub release](https://img.shields.io/github/v/release/Yattien/ESPEInk_ESP8266?include_prereleases)](https://github.com/Yattien/ESPEInk_ESP8266/releases)
+![GitHub All Releases](https://img.shields.io/github/downloads/Yattien/ESPEInk_ESP8266/total)
+
+# Waveshare-Treiberversion
+[28.02.2020](https://www.waveshare.com/wiki/File:E-Paper_ESP8266_Driver_Board_Code.7z)
+
+# Installation
+Das fertige Image kann per OTA (siehe auch OTA-Beispiel-Sketche) oder auch per [`esptool`](https://github.com/espressif/esptool) auf den ESP8266 geladen werden.
 
 # Features
 * **Einrichtungsmanager** für WiFi, MQTT und Deepsleep-Zeit
