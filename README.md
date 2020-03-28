@@ -1,6 +1,7 @@
 # ESPEInk-ESP8266
 Erweiterung des ESP8266-Waveshare-Treibers um Wifi-Einrichtungsassistent, Deepsleep und MQTT-Funktionalität als Ergänzung zum FHEM-Modul `ESPEInk`.
 
+![GitHub](https://img.shields.io/github/license/Yattien/ESPEInk_ESP8266)
 [![GitHub release](https://img.shields.io/github/v/release/Yattien/ESPEInk_ESP8266?include_prereleases)](https://github.com/Yattien/ESPEInk_ESP8266/releases)
 ![GitHub All Releases](https://img.shields.io/github/downloads/Yattien/ESPEInk_ESP8266/total)
 
