@@ -39,6 +39,7 @@ const int FW_VERSION = 13; // for OTA
 const char *AP_NAME = "ESPEInk-APSetup";
 const char *CONFIG_FILE = "/config.json";
 const float TICKS_PER_SECOND = 80000000; // 80 MHz processor
+const int UPTIME_SEC = 10;
 
 bool shouldSaveConfig = false;
 bool isUpdateAvailable = false;
@@ -50,6 +51,7 @@ Ctx ctx;
 // -----------------------------------------------------------------------------------------------------
 void setup() {
 	Serial.begin(115200);
+	pinMode(D0, WAKEUP_PULLUP);
 	pinMode(LED_BUILTIN, OUTPUT);
 	digitalWrite(LED_BUILTIN, HIGH);
 
@@ -298,23 +300,26 @@ void loop() {
 	}
 
 	bool isTimeToSleep = false;
-	if (!isTimeToSleep && ctx.sleepTime > 0) { // check if 10 seconds have passed
-		if (difference > 10 * TICKS_PER_SECOND) {
-			isTimeToSleep = true;
-		}
+	if (isMqttEnabled) {
+		disconnect();
+		isTimeToSleep = true;
 
-	} else if (!isTimeToSleep && isMqttEnabled) {
-		if (isMqttEnabled) {
-			mqttClient.disconnect();
-			delay(100);
-		}
+	} else if (difference > UPTIME_SEC * TICKS_PER_SECOND) {
 		isTimeToSleep = true;
 	}
 
-	if (!isDisplayUpdateRunning && isTimeToSleep) {
-		Serial.printf("Going to sleep for %ld seconds.\r\n", ctx.sleepTime);
-		ESP.deepSleep(ctx.sleepTime * 1000000);
-		delay(100);
+	if (!isDisplayUpdateRunning) {
+		if (isTimeToSleep) {
+			if (ctx.sleepTime > 0) {
+				Serial.printf("Going to sleep for %ld seconds.\r\n", ctx.sleepTime);
+				ESP.deepSleep(ctx.sleepTime * 1000000);
+				delay(100);
+
+			} else { // avoid overheating
+				startCycle = ESP.getCycleCount();
+				delay(1000);
+			}
+		}
 	}
 }
 
@@ -364,6 +369,20 @@ void reconnect() {
 				Serial.printf(" subscription to %s failed: %d\r\n", ctx.mqttUpdateStatusTopic, rc);
 			}
 		}
+	}
+}
+
+void disconnect() {
+	if (mqttClient.connected()) {
+		Serial.println("Disconnecting from MQTT...");
+		boolean rc = mqttClient.unsubscribe(ctx.mqttUpdateStatusTopic);
+		if (rc) {
+			Serial.printf(" unsubscribed from %s\r\n", ctx.mqttUpdateStatusTopic);
+		} else {
+			Serial.printf(" unsubscription from %s failed: %d\r\n", ctx.mqttUpdateStatusTopic, rc);
+		}
+		mqttClient.disconnect();
+		delay(100);
 	}
 }
 
