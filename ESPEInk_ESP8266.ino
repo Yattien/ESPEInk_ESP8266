@@ -256,6 +256,9 @@ void loop() {
 		for (int i = 0; i < 100; ++i) {
 			mqttClient.loop();
 		}
+		if (!isUpdateAvailable) {
+			Serial.println(" no update available");
+		}
 	}
 
 	static unsigned long startCycle = ESP.getCycleCount();
