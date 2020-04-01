@@ -34,7 +34,7 @@ WiFiClient espClient;
 PubSubClient mqttClient(espClient);
 
 // -----------------------------------------------------------------------------------------------------
-const int FW_VERSION = 13; // for OTA
+const int FW_VERSION = 14; // for OTA
 // -----------------------------------------------------------------------------------------------------
 const char *AP_NAME = "ESPEInk-APSetup";
 const char *CONFIG_FILE = "/config.json";
@@ -251,7 +251,7 @@ void initializeWebServer() {
 
 // -----------------------------------------------------------------------------------------------------
 void loop() {
-	if (isMqttEnabled && !mqttClient.connected()) {
+	if (!isDisplayUpdateRunning && isMqttEnabled && !mqttClient.connected()) {
 		reconnect();
 		Serial.println(" reconnected, waiting for incoming MQTT message");
 		for (int i = 0; i < 100; ++i) {
@@ -281,6 +281,8 @@ void loop() {
 
 			if (isUpdateAvailable) {
 				mqttClient.publish(ctx.mqttCommandTopic, "true");
+				delay(100);
+				disconnect();
 			}
 			Serial.printf("Webserver started, waiting %sfor updates\r\n", isMqttEnabled ? "" : "10s ");
 
@@ -300,8 +302,7 @@ void loop() {
 	}
 
 	bool isTimeToSleep = false;
-	if (isMqttEnabled) {
-		disconnect();
+	if (isMqttEnabled && !isUpdateAvailable) {
 		isTimeToSleep = true;
 
 	} else if (difference > UPTIME_SEC * TICKS_PER_SECOND) {
@@ -311,6 +312,7 @@ void loop() {
 	if (!isDisplayUpdateRunning) {
 		if (isTimeToSleep) {
 			if (ctx.sleepTime > 0) {
+				disconnect();
 				Serial.printf("Going to sleep for %ld seconds.\r\n", ctx.sleepTime);
 				ESP.deepSleep(ctx.sleepTime * 1000000);
 				delay(100);
@@ -397,6 +399,7 @@ void handleBrowserCall() {
 // -----------------------------------------------------------------------------------------------------
 void EPD_Init() {
 	isDisplayUpdateRunning = true;
+	isUpdateAvailable = false;
 	EPD_dispIndex = ((int) server.arg(0)[0] - 'a')
 			+ (((int) server.arg(0)[1] - 'a') << 4);
 	// Print log message: initialization of e-Paper (e-Paper's type)
