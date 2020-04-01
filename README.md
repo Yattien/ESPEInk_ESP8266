@@ -60,7 +60,9 @@ Im Zusammenspiel mit dem FHEM-Modul `ESPEInk` kann man das EInk-Display dazu bri
 * der ESP erwacht und befragt das Topic `stat/display/needUpdate`, ob es was zu tun gibt. Falls nicht, geht er wieder schlafen (Wachzeit ~ 5s).
 * falls es etwas zu tun gibt, startet der ESP seinen Webserver und setzt das MQTT-Topic `cmd/display/upload`
 * das MQTT_DEVICE reagiert darauf und startet den ESPEink-upload
-    
+
+:exclamation: Untenstehende FHEM-Schnipsel sind RAW-Definitionen: wenn man die Definition kopiert, dürfen die Backslash nicht mit eingefügt werden.
+
 ## Benötigt wird
 * ein eingerichtetes und funktionierendes FHEM-Modul `ESPEInk`
 	```
