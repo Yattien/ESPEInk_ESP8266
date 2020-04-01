@@ -254,9 +254,9 @@ void loop() {
 	if (isMqttEnabled && !mqttClient.connected()) {
 		reconnect();
 		Serial.println(" reconnected, waiting for incoming MQTT message");
-		// get max 100 messages
 		for (int i = 0; i < 100; ++i) {
 			mqttClient.loop();
+			delay(10);
 		}
 		if (!isUpdateAvailable) {
 			Serial.println(" no update available");
