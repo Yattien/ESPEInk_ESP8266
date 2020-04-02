@@ -1,6 +1,11 @@
 # Changelog
 
+## Version v15
+
+- Changed use unique AP name
+
 ## Version v14
+
 - Changed MQTT subscription
 - Added MQTT disconnect
 

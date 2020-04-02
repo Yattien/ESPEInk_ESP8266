@@ -34,13 +34,13 @@ WiFiClient espClient;
 PubSubClient mqttClient(espClient);
 
 // -----------------------------------------------------------------------------------------------------
-const int FW_VERSION = 14; // for OTA
+const int FW_VERSION = 15; // for OTA
 // -----------------------------------------------------------------------------------------------------
-const char *AP_NAME = "ESPEInk-APSetup";
 const char *CONFIG_FILE = "/config.json";
 const float TICKS_PER_SECOND = 80000000; // 80 MHz processor
 const int UPTIME_SEC = 10;
 
+char accessPointName[24];
 bool shouldSaveConfig = false;
 bool isUpdateAvailable = false;
 bool isDisplayUpdateRunning = false;
@@ -57,6 +57,7 @@ void setup() {
 
 	getConfig();
 	initMqttClientName();
+	initAccessPointName();
 
 	ctx.initWifiManagerParameters();
 	setupWifi();
@@ -110,6 +111,11 @@ void getConfig() {
 }
 
 // -----------------------------------------------------------------------------------------------------
+void initAccessPointName() {
+	sprintf(accessPointName, "ESPEInk-AP-%s", getMAC().c_str());
+}
+
+// -----------------------------------------------------------------------------------------------------
 void initMqttClientName() {
 	if (!strlen(ctx.mqttClientName)) {
 		sprintf(ctx.mqttClientName, "ESPEInk_%s", getMAC().c_str());
@@ -120,7 +126,13 @@ void initMqttClientName() {
 void setupWifi() {
 	WiFiManager wifiManager;
 	requestMqttParameters(&wifiManager);
-	wifiManager.autoConnect(AP_NAME);
+	initAccessPointName();
+	if (!wifiManager.autoConnect(accessPointName)) {
+		Serial.println("failed to connect, resetting");
+		WiFi.disconnect();
+		delay(1000);
+		ESP.restart();
+	}
 	Serial.println("Connected.");
 }
 
@@ -374,6 +386,7 @@ void reconnect() {
 	}
 }
 
+// -----------------------------------------------------------------------------------------------------
 void disconnect() {
 	if (mqttClient.connected()) {
 		Serial.println("Disconnecting from MQTT...");
