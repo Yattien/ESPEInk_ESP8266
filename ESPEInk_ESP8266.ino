@@ -222,6 +222,10 @@ void getUpdate() {
 					Serial.printf(" update file '%s' found\r\n", firmwareImageUrl.c_str());
 					break;
 			}
+
+		} else if (newVersion == -1) {
+			factoryReset();
+
 		} else {
 			Serial.println(" we are up to date");
 		}

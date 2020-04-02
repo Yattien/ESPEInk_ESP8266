@@ -3,6 +3,7 @@
 ## Version v15
 
 - Changed use unique AP name
+- Added factory reset possibility if OTA-update version is "-1"
 
 ## Version v14
 
