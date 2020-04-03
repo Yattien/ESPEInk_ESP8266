@@ -52,8 +52,8 @@ Ctx ctx;
 void setup() {
 	Serial.begin(115200);
 	pinMode(D0, WAKEUP_PULLUP);
-	pinMode(LED_BUILTIN, OUTPUT);
-	digitalWrite(LED_BUILTIN, HIGH);
+//	pinMode(LED_BUILTIN, OUTPUT); // won't work, waveshare uses D2 as DC
+//	digitalWrite(LED_BUILTIN, HIGH);
 
 	getConfig();
 	initMqttClientName();
@@ -288,7 +288,9 @@ void loop() {
 		difference = (currentCycle - startCycle);
 	}
 
-	if ((isMqttEnabled && isUpdateAvailable) || !isMqttEnabled) {
+	if ((isMqttEnabled && isUpdateAvailable)
+			|| (isMqttEnabled && isDisplayUpdateRunning)
+			|| !isMqttEnabled) {
 		static bool serverStarted = false;
 		if (!serverStarted) {
 			initializeWebServer();
@@ -308,10 +310,10 @@ void loop() {
 			int decile = fmod(difference / (TICKS_PER_SECOND / 100.0), 100.0);
 			static bool ledStatus = false;
 			if (!ledStatus && decile == 95) {
-				digitalWrite(LED_BUILTIN, LOW);
+//				digitalWrite(LED_BUILTIN, LOW);
 				ledStatus = true;
 			} else if (ledStatus && decile == 0) {
-				digitalWrite(LED_BUILTIN, HIGH);
+//				digitalWrite(LED_BUILTIN, HIGH);
 				ledStatus = false;
 			}
 		}

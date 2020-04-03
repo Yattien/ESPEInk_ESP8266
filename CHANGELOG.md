@@ -4,6 +4,7 @@
 
 - Changed use unique AP name
 - Added factory reset possibility if OTA-update version is "-1"
+- Fix update won't run
 
 ## Version v14
 
