@@ -298,7 +298,7 @@ void loop() {
 			if (isUpdateAvailable) {
 				mqttClient.publish(ctx.mqttCommandTopic, "true");
 				delay(100);
-				disconnect();
+				//disconnect();
 			}
 			Serial.printf("Webserver started, waiting %sfor updates\r\n", isMqttEnabled ? "" : "10s ");
 
@@ -328,7 +328,7 @@ void loop() {
 	if (!isDisplayUpdateRunning) {
 		if (isTimeToSleep) {
 			if (ctx.sleepTime > 0) {
-				disconnect();
+				//disconnect();
 				Serial.printf("Going to sleep for %ld seconds.\r\n", ctx.sleepTime);
 				ESP.deepSleep(ctx.sleepTime * 1000000);
 				delay(100);
