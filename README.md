@@ -39,6 +39,10 @@ Da ich bereits viele Libs in meiner Arduino-Bauumgebung habe und diese somit nic
 * WiFiManager
 * ?
 
+* [AsyncMqttClient](https://github.com/marvinroger/async-mqtt-client/releases/latest)
+* [ESPAsyncTCP](https://github.com/me-no-dev/ESPAsyncTCP/archive/master.zip)
+
+
 # Pin-Belegung Lolin/Wemos D1 mini
 e-Paper HAT|GPIO|Wemos D1
 --------------|---|--------

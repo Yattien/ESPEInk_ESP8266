@@ -1,5 +1,9 @@
 # Changelog
 
+## Version v16
+
+- Fix MQTT disconnect handling
+
 ## Version v15
 
 - Changed use unique AP name

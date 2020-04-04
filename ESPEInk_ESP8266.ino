@@ -17,10 +17,9 @@
 #include <WiFiManager.h>
 #include <ESP8266HTTPClient.h>
 #include <ESP8266httpUpdate.h>
-#include <ESP8266WebServer.h>
 #include <ArduinoJson.h>
 #include <FS.h>
-#include <PubSubClient.h>
+#include <AsyncMqttClient.h>
 #include "ctx.h"
 
 #include "scripts.h"    // JavaScript code
@@ -31,7 +30,7 @@
 ESP8266WebServer server(80);
 IPAddress myIP;       // IP address in your local wifi net
 WiFiClient espClient;
-PubSubClient mqttClient(espClient);
+AsyncMqttClient mqttClient;
 
 // -----------------------------------------------------------------------------------------------------
 const int FW_VERSION = 15; // for OTA
@@ -74,9 +73,7 @@ void setup() {
 	getUpdate();
 	initializeSpi();
 	myIP = WiFi.localIP();
-
-	mqttClient.setServer(ctx.mqttServer, ctx.mqttPort);
-	mqttClient.setCallback(callback);
+	setupMqtt();
 
 	Serial.println("Setup complete.");
 }
@@ -249,6 +246,15 @@ void initializeSpi() {
 }
 
 // -----------------------------------------------------------------------------------------------------
+void setupMqtt() {
+	mqttClient.onMessage(onMqttMessage);
+	mqttClient.onConnect(onMqttConnect);
+	mqttClient.setServer(ctx.mqttServer, ctx.mqttPort);
+	mqttClient.setCleanSession(false);
+	mqttClient.setClientId(ctx.mqttClientName);
+}
+
+// -----------------------------------------------------------------------------------------------------
 void initializeWebServer() {
 	server.on("/", handleBrowserCall);
 	server.on("/styles.css", sendCSS);
@@ -269,9 +275,7 @@ void initializeWebServer() {
 void loop() {
 	if (!isDisplayUpdateRunning && isMqttEnabled && !mqttClient.connected()) {
 		reconnect();
-		Serial.println(" reconnected, waiting for incoming MQTT message");
 		for (int i = 0; i < 100; ++i) {
-			mqttClient.loop();
 			delay(10);
 		}
 		if (!isUpdateAvailable) {
@@ -298,9 +302,10 @@ void loop() {
 			serverStarted = true;
 
 			if (isUpdateAvailable) {
-				mqttClient.publish(ctx.mqttCommandTopic, "true");
+				// uint16_t publish(const char* topic, uint8_t qos, bool retain, const char* payload = nullptr, size_t length = 0, bool dup = false, uint16_t message_id = 0)
+				mqttClient.publish(ctx.mqttCommandTopic, 0, false, "true");
 				delay(100);
-				//disconnect();
+				disconnect();
 			}
 			Serial.printf("Webserver started, waiting %sfor updates\r\n", isMqttEnabled ? "" : "10s ");
 
@@ -330,7 +335,7 @@ void loop() {
 	if (!isDisplayUpdateRunning) {
 		if (isTimeToSleep) {
 			if (ctx.sleepTime > 0) {
-				//disconnect();
+				disconnect();
 				Serial.printf("Going to sleep for %ld seconds.\r\n", ctx.sleepTime);
 				ESP.deepSleep(ctx.sleepTime * 1000000);
 				delay(100);
@@ -358,36 +363,41 @@ void abortDisplayUpdate() {
 }
 
 // -----------------------------------------------------------------------------------------------------
-void callback(char* topic, byte* message, unsigned int length) {
-	String messageTemp;
+void onMqttMessage(char* topic, char* payload, AsyncMqttClientMessageProperties properties, size_t length, size_t index, size_t total) {
+	String message;
 
 	for (int i = 0; i < length; i++) {
-		messageTemp += (char) message[i];
+		message += (char) payload[i];
 	}
 
 	if (String(topic) == ctx.mqttUpdateStatusTopic
-			&& messageTemp == "true") {
+			&& message == "true") {
 		isUpdateAvailable = true;
 	}
 
 	Serial.print("Callback called, isUpdateAvailable=");
-	Serial.println(messageTemp);
+	Serial.println(message);
 }
 
 // -----------------------------------------------------------------------------------------------------
 void reconnect() {
 	Serial.println("Connecting to MQTT...");
 	while (!mqttClient.connected()) {
-		// clientID, username, password, willTopic, willQoS, willRetain, willMessage, cleanSession
-		if (!mqttClient.connect(ctx.mqttClientName, NULL, NULL, NULL, 0, 0, NULL, 0)) {
-			delay(1000);
+		mqttClient.connect();
+		delay(1000);
+	}
+}
+
+// -----------------------------------------------------------------------------------------------------
+void onMqttConnect(bool sessionPresent) {
+	Serial.println(" connected to MQTT, subscribing...");
+
+	if (sessionPresent) {
+		boolean rc = mqttClient.subscribe(ctx.mqttUpdateStatusTopic, 1);
+		if (rc) {
+			Serial.printf(" subscribed to %s\r\n", ctx.mqttUpdateStatusTopic);
 		} else {
-			boolean rc = mqttClient.subscribe(ctx.mqttUpdateStatusTopic, 1);
-			if (rc) {
-				Serial.printf(" subscribed to %s\r\n", ctx.mqttUpdateStatusTopic);
-			} else {
-				Serial.printf(" subscription to %s failed: %d\r\n", ctx.mqttUpdateStatusTopic, rc);
-			}
+			Serial.printf(" subscription to %s failed: %d\r\n", ctx.mqttUpdateStatusTopic, rc);
 		}
 	}
 }
@@ -396,12 +406,6 @@ void reconnect() {
 void disconnect() {
 	if (mqttClient.connected()) {
 		Serial.println("Disconnecting from MQTT...");
-		boolean rc = mqttClient.unsubscribe(ctx.mqttUpdateStatusTopic);
-		if (rc) {
-			Serial.printf(" unsubscribed from %s\r\n", ctx.mqttUpdateStatusTopic);
-		} else {
-			Serial.printf(" unsubscription from %s failed: %d\r\n", ctx.mqttUpdateStatusTopic, rc);
-		}
 		mqttClient.disconnect();
 		delay(100);
 	}
