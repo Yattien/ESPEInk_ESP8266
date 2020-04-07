@@ -34,7 +34,7 @@ WiFiClient espClient;
 PubSubClient mqttClient(espClient);
 
 // -----------------------------------------------------------------------------------------------------
-const int FW_VERSION = 15; // for OTA
+const int FW_VERSION = 16; // for OTA
 // -----------------------------------------------------------------------------------------------------
 const char *CONFIG_FILE = "/config.json";
 const float TICKS_PER_SECOND = 80000000; // 80 MHz processor
@@ -74,9 +74,7 @@ void setup() {
 	getUpdate();
 	initializeSpi();
 	myIP = WiFi.localIP();
-
-	mqttClient.setServer(ctx.mqttServer, ctx.mqttPort);
-	mqttClient.setCallback(callback);
+	setupMqtt();
 
 	Serial.println("Setup complete.");
 }
@@ -249,6 +247,12 @@ void initializeSpi() {
 }
 
 // -----------------------------------------------------------------------------------------------------
+void setupMqtt() {
+	mqttClient.setServer(ctx.mqttServer, ctx.mqttPort);
+	mqttClient.setCallback(callback);
+}
+
+// -----------------------------------------------------------------------------------------------------
 void initializeWebServer() {
 	server.on("/", handleBrowserCall);
 	server.on("/styles.css", sendCSS);
@@ -396,12 +400,6 @@ void reconnect() {
 void disconnect() {
 	if (mqttClient.connected()) {
 		Serial.println("Disconnecting from MQTT...");
-		boolean rc = mqttClient.unsubscribe(ctx.mqttUpdateStatusTopic);
-		if (rc) {
-			Serial.printf(" unsubscribed from %s\r\n", ctx.mqttUpdateStatusTopic);
-		} else {
-			Serial.printf(" unsubscription from %s failed: %d\r\n", ctx.mqttUpdateStatusTopic, rc);
-		}
 		mqttClient.disconnect();
 		delay(100);
 	}

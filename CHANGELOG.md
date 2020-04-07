@@ -1,5 +1,9 @@
 # Changelog
 
+## Version v16
+
+- Fix MQTT subscription
+
 ## Version v15
 
 - Changed use unique AP name
