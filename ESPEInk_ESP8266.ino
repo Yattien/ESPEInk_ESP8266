@@ -34,7 +34,7 @@ WiFiClient espClient;
 PubSubClient mqttClient(espClient);
 
 // -----------------------------------------------------------------------------------------------------
-const int FW_VERSION = 16; // for OTA
+const int FW_VERSION = 17; // for OTA
 // -----------------------------------------------------------------------------------------------------
 const char *CONFIG_FILE = "/config.json";
 const float TICKS_PER_SECOND = 80000000; // 80 MHz processor
@@ -304,7 +304,6 @@ void loop() {
 			if (isUpdateAvailable) {
 				mqttClient.publish(ctx.mqttCommandTopic, "true");
 				delay(100);
-				//disconnect();
 			}
 			Serial.printf("Webserver started, waiting %sfor updates\r\n", isMqttEnabled ? "" : "10s ");
 
@@ -334,7 +333,7 @@ void loop() {
 	if (!isDisplayUpdateRunning) {
 		if (isTimeToSleep) {
 			if (ctx.sleepTime > 0) {
-				//disconnect();
+				disconnect();
 				Serial.printf("Going to sleep for %ld seconds.\r\n", ctx.sleepTime);
 				ESP.deepSleep(ctx.sleepTime * 1000000);
 				delay(100);
@@ -357,6 +356,7 @@ void factoryReset() {
 	ESP.restart();
 }
 
+// -----------------------------------------------------------------------------------------------------
 void abortDisplayUpdate() {
 	isDisplayUpdateRunning = false;
 }
@@ -401,7 +401,7 @@ void disconnect() {
 	if (mqttClient.connected()) {
 		Serial.println("Disconnecting from MQTT...");
 		mqttClient.disconnect();
-		delay(100);
+		delay(5);
 	}
 }
 
