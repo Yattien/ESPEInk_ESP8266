@@ -1,5 +1,9 @@
 # Changelog
 
+## Version v17
+
+- Fix display 2in13 V2 is reset if no data available
+
 ## Version v16
 
 - Fix MQTT subscription

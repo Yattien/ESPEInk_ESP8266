@@ -72,7 +72,6 @@ void setup() {
 	saveConfig();
 
 	getUpdate();
-	initializeSpi();
 	myIP = WiFi.localIP();
 	setupMqtt();
 
@@ -417,6 +416,7 @@ void handleBrowserCall() {
 void EPD_Init() {
 	isDisplayUpdateRunning = true;
 	isUpdateAvailable = false;
+	initializeSpi();
 	EPD_dispIndex = ((int) server.arg(0)[0] - 'a')
 			+ (((int) server.arg(0)[1] - 'a') << 4);
 	// Print log message: initialization of e-Paper (e-Paper's type)
