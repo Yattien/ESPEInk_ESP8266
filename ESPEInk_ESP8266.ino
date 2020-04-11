@@ -54,7 +54,6 @@ void setup() {
 	Serial.println("\r\nESPEInk_ESP8266 v" + String(FW_VERSION) + ", reset reason='" + ESP.getResetReason() + "'...");
 	Serial.println("Entering setup...");
 
-	pinMode(D0, WAKEUP_PULLUP);
 //	pinMode(LED_BUILTIN, OUTPUT); // won't work, waveshare uses D2 as DC
 //	digitalWrite(LED_BUILTIN, HIGH);
 
