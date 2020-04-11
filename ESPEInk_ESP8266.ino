@@ -54,9 +54,6 @@ void setup() {
 	Serial.println("\r\nESPEInk_ESP8266 v" + String(FW_VERSION) + ", reset reason='" + ESP.getResetReason() + "'...");
 	Serial.println("Entering setup...");
 
-//	pinMode(LED_BUILTIN, OUTPUT); // won't work, waveshare uses D2 as DC
-//	digitalWrite(LED_BUILTIN, HIGH);
-
 	getConfig();
 	initMqttClientName();
 	initAccessPointName();
@@ -245,11 +242,13 @@ void getUpdate() {
 
 // -----------------------------------------------------------------------------------------------------
 void initializeSpi() {
+	Serial.println(" Initializing SPI...");
 	pinMode(CS_PIN, OUTPUT);
 	pinMode(RST_PIN, OUTPUT);
 	pinMode(DC_PIN, OUTPUT);
 	pinMode(BUSY_PIN, INPUT);
 	SPI.begin();
+	Serial.println(" Initialized SPI.");
 }
 
 // -----------------------------------------------------------------------------------------------------
@@ -260,6 +259,7 @@ void setupMqtt() {
 
 // -----------------------------------------------------------------------------------------------------
 void initializeWebServer() {
+	Serial.println(" Initializing webserver...");
 	server.on("/", handleBrowserCall);
 	server.on("/styles.css", sendCSS);
 	server.on("/processingA.js", sendJS_A);
@@ -273,6 +273,7 @@ void initializeWebServer() {
 	server.on("/reset", factoryReset);
 	server.on("/abort", abortDisplayUpdate);
 	server.onNotFound(handleNotFound);
+	Serial.println(" Initialized webserver.");
 }
 
 // -----------------------------------------------------------------------------------------------------
@@ -315,16 +316,6 @@ void loop() {
 
 		} else {
 			server.handleClient();
-
-			int decile = fmod(difference / (TICKS_PER_SECOND / 100.0), 100.0);
-			static bool ledStatus = false;
-			if (!ledStatus && decile == 95) {
-//				digitalWrite(LED_BUILTIN, LOW);
-				ledStatus = true;
-			} else if (ledStatus && decile == 0) {
-//				digitalWrite(LED_BUILTIN, HIGH);
-				ledStatus = false;
-			}
 		}
 	}
 
@@ -340,6 +331,7 @@ void loop() {
 		if (isTimeToSleep) {
 			if (ctx.sleepTime > 0) {
 				disconnect();
+				forceUlpMode();
 				Serial.printf("\r\nGoing to sleep for %ld seconds.\r\n\r\n", ctx.sleepTime);
 				ESP.deepSleep(ctx.sleepTime * 1000000);
 				delay(100);
@@ -418,6 +410,14 @@ void handleBrowserCall() {
 }
 
 // -----------------------------------------------------------------------------------------------------
+void forceUlpMode() {
+	Serial.println("Prevent display reset...");
+	digitalWrite(RST_PIN, HIGH);
+	Serial.println("RST set explicitely to HIGH.");
+	delay(200);
+}
+
+// -----------------------------------------------------------------------------------------------------
 // waveshare display part
 // -----------------------------------------------------------------------------------------------------
 void EPD_Init() {
@@ -477,7 +477,7 @@ void EPD_Show() {
 	// Show results and Sleep
 	EPD_dispMass[EPD_dispIndex].show();
 	server.send(200, "text/plain", "Show ok\r\n");
-	delay(200);
+	delay(2000);
 	isDisplayUpdateRunning = false;
 }
 
