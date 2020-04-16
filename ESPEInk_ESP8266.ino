@@ -20,8 +20,8 @@ const int UPTIME_SEC = 30;
 
 void setup(void) {
 	// interne LED explizit deaktivieren
-//	pinMode(LED_BUILTIN, OUTPUT);
-//	digitalWrite(LED_BUILTIN, HIGH);
+	pinMode(LED_BUILTIN, OUTPUT);
+	digitalWrite(LED_BUILTIN, HIGH);
 
 	rst_info *rsti;
   Serial.begin(115200);
@@ -101,6 +101,12 @@ void loop(void) {
 
   if((firstRun && gotContent) 
 		  || (!firstRun && (difference > UPTIME_SEC * TICKS_PER_SECOND))) {
+
+	  if(!gotContent) {
+		  Serial.println("Workaround: call show() even if there is no update.");
+		  EPD_dispMass[3].show();
+	  }
+
 	  Serial.println("Going to sleep...");
 	  ESP.deepSleep(60 * 1000000); // sleep a minute
 	  delay(100);
