@@ -51,6 +51,9 @@ CLK|14|D5
 GND|GND|G
 VCC|3.3V|3V3
 
+# Bekannte Fehler
+* Das 2.13-Display funktioniert nicht mit einem "Wemos D1 mini" oder einem Clon davon im deepsleep-Mode. Grund dafür ist, dass die Reset-Leitung des Displays und die interne LED sich einen Port teilen und die LED irgendwo angesteuert wird - und sich das Display dann löscht. Falls jmd. eine Lösung hat, arbeite ich sie gern mit ein.
+
 # MQTT-Szenario
 Im Zusammenspiel mit dem FHEM-Modul `ESPEInk` kann man das EInk-Display dazu bringen, weniger Strom zu verbrauchen. Dazu kann man so vorgehen:
 * das Attribut `interval` in ESPEInk steht auf einem hohen Wert, da kein automatischer Upload erfolgen soll (noch notwendiger Workaround)

@@ -157,7 +157,7 @@ void saveConfig() {
 		Serial.println(" Saving config...");
 		File configFile = SPIFFS.open(CONFIG_FILE, "w");
 		if (!configFile) {
-			Serial.println("failed to open config file for writing");
+			Serial.println("  Failed to open config file for writing.");
 		}
 		DynamicJsonDocument jsonDocument(512);
 		jsonDocument["mqttServer"] = ctx.mqttServer;
@@ -168,7 +168,7 @@ void saveConfig() {
 		jsonDocument["sleepTime"] = ctx.sleepTime;
 		jsonDocument["firmwareUrl"] = ctx.firmwareUrl;
 		if (serializeJson(jsonDocument, configFile) == 0) {
-			Serial.println("Failed to write to file");
+			Serial.println("  Failed to write to file.");
 		}
 		configFile.close();
 		Serial.println(" Config saved.");
