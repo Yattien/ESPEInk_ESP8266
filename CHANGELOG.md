@@ -2,7 +2,7 @@
 
 ## Version v17
 
-- Fix display 2in13 V2 is reset if no data available
+- Updated waveshare code to version 29.20.2020
 
 ## Version v16
 

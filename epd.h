@@ -30,10 +30,10 @@ extern ESP8266WebServer server;
 
 /* SPI pin definition --------------------------------------------------------*/
 // SPI pin definition
-#define CS_PIN 15   // D8
-#define RST_PIN 2   // D4
-#define DC_PIN 4    // D2
-#define BUSY_PIN 5  // D1
+#define CS_PIN 15
+#define RST_PIN 2
+#define DC_PIN 4
+#define BUSY_PIN 5
 
 /* Pin level definition ------------------------------------------------------*/
 #define LOW 0
@@ -92,6 +92,13 @@ void EPD_WaitUntilIdle()
     //0: busy, 1: idle
     while (digitalRead(BUSY_PIN) == 0)
         delay(100);
+}
+
+/* Waiting the e-Paper is ready for further instructions ---------------------*/
+void EPD_WaitUntilIdle_high() 
+{
+    //1: busy, 0: idle
+    while(digitalRead(BUSY_PIN) == 1) delay(100);    
 }
 
 /* Send a one-argument command -----------------------------------------------*/
@@ -183,9 +190,13 @@ void EPD_Reset()
 #include "epd2in13.h"
 #include "epd2in9.h"
 #include "epd2in7.h"
+#include "epd2in66.h"
+#include "epd3in7.h"
 #include "epd4in2.h"
+#include "epd5in65f.h"
 #include "epd5in83.h"
 #include "epd7in5.h"
+#include "epd7in5_HD.h"
 
 int EPD_dispIndex;        // The index of the e-Paper's type
 int EPD_dispX, EPD_dispY; // Current pixel's coordinates (for 2.13 only)
@@ -405,6 +416,35 @@ void EPD_loadE()
     }
 }
 
+/* Image data loading function for 5.65f e-Paper -----------------------------*/
+void EPD_loadG()
+{
+    Serial.print("\r\n EPD_loadG");
+    int index = 0;
+    String p = server.arg(0);
+
+    // Get the length of the image data begin
+    int DataLength = p.length() - 8;
+
+    // Enumerate all of image data bytes
+    while (index < DataLength)
+    {
+        // Get current byte from obtained image data
+        int value = ((int)p[index] - 'a') + (((int)p[index + 1] - 'a') << 4);
+		
+        // Switch the positions of the two 4-bits pixels
+        // Black:0b000;White:0b001;Green:0b010;Blue:0b011;Red:0b100;Yellow:0b101;Orange:0b110;
+        int A = (value     ) & 0x07;
+        int B = (value >> 4) & 0x07;
+		
+        // Write the data into e-Paper's memory
+        EPD_SendData((byte)(A << 4) + B);
+		
+        // Increment the current byte index on 2 characters
+        index += 2;
+    }
+}
+
 /* Show image and turn to deep sleep mode (a-type, 4.2 and 2.7 e-Paper) ------*/
 void EPD_showA()
 {
@@ -503,30 +543,39 @@ struct EPD_dispInfo
 
 /* Array of sets describing the usage of e-Papers ----------------------------*/
 EPD_dispInfo EPD_dispMass[] = {
-    {EPD_Init_1in54, EPD_loadA, -1, 0, EPD_showA, "1.54 inch"},                             // a 0
-    {EPD_Init_1in54b, EPD_loadB, 0x13, EPD_loadA, EPD_showB, "1.54 inch b"},                // b 1
-    {EPD_Init_1in54c, EPD_loadA, 0x13, EPD_loadA, EPD_showB, "1.54 inch c"},                // c 2
-    {EPD_Init_2in13, EPD_loadC, -1, 0, EPD_showA, "2.13 inch"},                             // d 3
-    {EPD_Init_2in13b, EPD_loadA, 0x13, EPD_loadA, EPD_showB, "2.13 inch b"},                // e 4
-    {EPD_Init_2in13b, EPD_loadA, 0x13, EPD_loadA, EPD_showB, "2.13 inch c"},                // f 5
-    {EPD_Init_2in13d, EPD_loadA, -1, 0, EPD_showD, "2.13 inch d"},                          // g 6
-    {EPD_Init_2in7, EPD_loadA, -1, 0, EPD_showB, "2.7 inch"},                               // h 7
-    {EPD_Init_2in7b, EPD_loadA, 0x13, EPD_loadA, EPD_showB, "2.7 inch b"},                  // i 8
-    {EPD_Init_2in9, EPD_loadA, -1, 0, EPD_showA, "2.9 inch"},                               // j 9
-    {EPD_Init_2in9b, EPD_loadA, 0x13, EPD_loadA, EPD_showB, "2.9 inch b"},                  // k 10
-    {EPD_Init_2in9b, EPD_loadA, 0x13, EPD_loadA, EPD_showB, "2.9 inch c"},                  // l 11
-    {EPD_Init_2in9d, EPD_loadA, -1, 0, EPD_2IN9D_Show, "2.9 inch d"},                       // l 12
-    {EPD_Init_4in2, EPD_loadA, -1, 0, EPD_showB, "4.2 inch"},                               // m 13
-    {EPD_Init_4in2b, EPD_loadA, 0x13, EPD_loadA, EPD_showB, "4.2 inch b"},                  // n 14
-    {EPD_Init_4in2b, EPD_loadA, 0x13, EPD_loadA, EPD_showB, "4.2 inch c"},                  // o 15
-    {EPD_5in83__init, EPD_loadD, -1, 0, EPD_showC, "5.83 inch"},                            // p 16
-    {EPD_5in83b__init, EPD_loadE, -1, 0, EPD_showC, "5.83 inch b"},                         // q 17
-    {EPD_5in83b__init, EPD_loadE, -1, 0, EPD_showC, "5.83 inch c"},                         // r 18
-    {EPD_7in5__init, EPD_loadD, -1, 0, EPD_showC, "7.5 inch"},                              // s 19
-    {EPD_7in5__init, EPD_loadE, -1, 0, EPD_showC, "7.5 inch b"},                            // t 20
-    {EPD_7in5__init, EPD_loadE, -1, 0, EPD_showC, "7.5 inch c"},                            // u 21
-    {EPD_7in5_V2_init, EPD_loadAFilp, -1, 0, EPD_7IN5_V2_Show, "7.5 inch V2"},              // w 22
-    {EPD_7in5B_V2_Init, EPD_loadA, 0x13, EPD_loadAFilp, EPD_7IN5_V2_Show, "7.5 inch B V2 "} // x 23
+    {EPD_Init_1in54,		EPD_loadA, 	-1,		0, 				EPD_showA,			"1.54 inch"},	// a 0
+    {EPD_Init_1in54b,		EPD_loadB,0x13, 	EPD_loadA,		EPD_showB, 			"1.54 inch b"},	// b 1
+    {EPD_Init_1in54c,		EPD_loadA,0x13, 	EPD_loadA, 		EPD_showB, 			"1.54 inch c"},	// c 2
+    {EPD_Init_2in13,		EPD_loadC, 	-1, 	0, 				EPD_showA, 			"2.13 inch"},	// d 3
+    {EPD_Init_2in13b,		EPD_loadA,0x13, 	EPD_loadA, 		EPD_showB, 			"2.13 inch b"},	// e 4
+    {EPD_Init_2in13b,		EPD_loadA,0x13, 	EPD_loadA, 		EPD_showB, 			"2.13 inch c"},	// f 5
+    {EPD_Init_2in13d, 		EPD_loadA, 	-1, 	0, 				EPD_showD, 			"2.13 inch d"},	// g 6
+    {EPD_Init_2in7, 		EPD_loadA, 	-1, 	0, 				EPD_showB, 			"2.7 inch"},	// h 7
+    {EPD_Init_2in7b, 		EPD_loadA,0x13, 	EPD_loadA, 		EPD_showB, 			"2.7 inch b"},	// i 8
+    {EPD_Init_2in9, 		EPD_loadA, 	-1,	 	0, 				EPD_showA, 			"2.9 inch"},	// j 9
+    {EPD_Init_2in9b, 		EPD_loadA,0x13, 	EPD_loadA, 		EPD_showB, 			"2.9 inch b"},	// k 10
+    {EPD_Init_2in9b, 		EPD_loadA,0x13, 	EPD_loadA, 		EPD_showB, 			"2.9 inch c"},	// l 11
+    {EPD_Init_2in9d, 		EPD_loadA, 	-1, 	0, 				EPD_2IN9D_Show,		"2.9 inch d"},	// l 12
+    {EPD_Init_4in2, 		EPD_loadA, 	-1,	 	0, 				EPD_showB, 			"4.2 inch"},	// m 13
+    {EPD_Init_4in2b, 		EPD_loadA,0x13, 	EPD_loadA, 		EPD_showB, 			"4.2 inch b"},	// n 14
+    {EPD_Init_4in2b, 		EPD_loadA,0x13, 	EPD_loadA,		EPD_showB, 			"4.2 inch c"},	// o 15
+    {EPD_5in83__init, 		EPD_loadD, 	-1,		0, 				EPD_showC, 			"5.83 inch"},	// p 16
+    {EPD_5in83b__init, 		EPD_loadE, 	-1,		0, 				EPD_showC,			"5.83 inch b"},	// q 17
+    {EPD_5in83b__init, 		EPD_loadE, 	-1,		0, 				EPD_showC, 			"5.83 inch c"},	// r 18
+    {EPD_7in5__init, 		EPD_loadD, 	-1,		0, 				EPD_showC, 			"7.5 inch"},	// s 19
+    {EPD_7in5__init, 		EPD_loadE,	-1,		0,				EPD_showC, 			"7.5 inch b"},	// t 20
+    {EPD_7in5__init, 		EPD_loadE, 	-1, 	0, 				EPD_showC, 			"7.5 inch c"},	// u 21
+    {EPD_7in5_V2_init,		EPD_loadAFilp,-1, 	0,				EPD_7IN5_V2_Show,	"7.5 inch V2"},	// w 22
+    {EPD_7in5B_V2_Init,	 	EPD_loadA,0x13, 	EPD_loadAFilp, 	EPD_7IN5_V2_Show,	"7.5 inch B V2 "}, // x 23
+	{EPD_7IN5B_HD_init, 	EPD_loadA,0X26, 	EPD_loadAFilp, 	EPD_7IN5B_HD_Show,	"7.5 inch B HD "}, // y 24
+	{EPD_5IN65F_init,		EPD_loadG,	-1,		0,				EPD_5IN65F_Show,	"5.65 inch F "	}, // z 25
+	{EPD_7IN5_HD_init,		EPD_loadA,	-1,		0,				EPD_7IN5_HD_Show,	"7.5 inch HD"	}, // A 26
+	{EPD_3IN7_1Gray_Init,	EPD_loadA,	-1,		0,				EPD_3IN7_1Gray_Show,"3.7 inch"		},	// 27
+	{EPD_2IN66_Init,		EPD_loadA,	-1,		0,				EPD_2IN66_Show,		"2.66 inch"		},	// 28
+	{EPD_5in83b_V2_init,	EPD_loadA,0x13,		EPD_loadAFilp,	EPD_showC,			"5.83 inch B V2"},	// 29
+	{EPD_Init_2in9b_V2,		EPD_loadA,0x13,		EPD_loadA,		EPD_showC,			"2.9 inch B V2"	},	// 30
+	{EPD_1IN54B_V2_Init,	EPD_loadA,0x26,		EPD_loadAFilp,	EPD_1IN54B_V2_Show,	"1.54 inch B V2"},	// 31
+	{EPD_2IN13B_V3_Init,	EPD_loadA,0x13,		EPD_loadA,		EPD_2IN13B_V3_Show,	"2.13 inch B V3"},	// 32
 };
 
 /* Initialization of an e-Paper ----------------------------------------------*/

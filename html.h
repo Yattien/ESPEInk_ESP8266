@@ -17,6 +17,7 @@ server.send(200, "text/html",
 "<!DOCTYPE html>\r\n"
 "<html>\r\n"
 "<head>\r\n"
+"<link rel='icon' href='data:;base64,='>\r\n"
 "<meta charset='utf-8'>\r\n"
 "<title>PriceTag</title>\r\n"
 "<link rel='stylesheet' href='styles.css'>\r\n"

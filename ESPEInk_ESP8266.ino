@@ -107,7 +107,7 @@ void getConfig() {
 			}
 		}
 	} else {
-		Serial.println("  Failed to mount FS.");
+		Serial.println("  Failed to mount FS (probably initial start), continuing w/o config...");
 	}
 }
 
@@ -132,7 +132,7 @@ void setupWifi() {
 	requestMqttParameters(&wifiManager);
 	initAccessPointName();
 	if (!wifiManager.autoConnect(accessPointName)) {
-		Serial.println("failed to connect, resetting");
+		Serial.println("  Failed to connect, resetting.");
 		WiFi.disconnect();
 		delay(1000);
 		ESP.restart();
