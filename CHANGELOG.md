@@ -1,5 +1,9 @@
 # Changelog
 
+## Version v18
+
+- TLS and login credentials support
+
 ## Version v17
 
 - Updated waveshare code to version 29.20.2020
