@@ -473,7 +473,7 @@ void EPD_Next() {
 }
 
 void EPD_Show() {
-	Serial.println("SHOW");
+	Serial.println("\r\nSHOW\r\n");
 	// Show results and Sleep
 	EPD_dispMass[EPD_dispIndex].show();
 	server.send(200, "text/plain", "Show ok\r\n");
