@@ -3,6 +3,7 @@
 ## Version v18
 
 - TLS and login credentials support
+- don't check if OTA update is available after deep-sleep
 
 ## Version v17
 

@@ -50,8 +50,9 @@ Ctx ctx;
 
 // -----------------------------------------------------------------------------------------------------
 void setup() {
+	String resetReason = ESP.getResetReason();
 	Serial.begin(115200);
-	Serial.println("\r\nESPEInk_ESP8266 v" + String(FW_VERSION) + ", reset reason='" + ESP.getResetReason() + "'...");
+	Serial.println("\r\nESPEInk_ESP8266 v" + String(FW_VERSION) + ", reset reason='" + resetReason + "'...");
 	Serial.println("Entering setup...");
 
 //	pinMode(LED_BUILTIN, OUTPUT); // won't work, waveshare uses D2 as DC
@@ -74,7 +75,9 @@ void setup() {
 	Serial.printf("  firmware base URL: %s\r\n", ctx.firmwareUrl);
 	saveConfig();
 
-	getUpdate();
+	if (resetReason != "Deep-Sleep Wake") {
+		getUpdate();
+	}
 	myIP = WiFi.localIP();
 	setupMqtt();
 
