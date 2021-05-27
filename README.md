@@ -38,6 +38,7 @@ Da ich bereits viele Libs in meiner Arduino-Bauumgebung habe und diese somit nic
 
 * ArduinoJSON >=6
 * WiFiManager
+* PusSubClient
 * ?
 
 # Pin-Belegung Lolin/Wemos D1 mini
