@@ -34,12 +34,10 @@ Das fertige Image kann per OTA (siehe auch OTA-Beispiel-Sketche) oder auch per [
 * **Abort-Seite** `http://<esp>/abort`, um einen verzögerten Schlaf (bspw. abgebrochener manueller Upload) sofort auszulösen 
 
 # Abhängigkeiten
-Da ich bereits viele Libs in meiner Arduino-Bauumgebung habe und diese somit nicht mehr "clean" ist, können es auch mehr Abhängigkeiten sein, die zusätzlich installiert werden müssen. Für Tipps bin ich dankbar :)
-
-* ArduinoJSON >=6
-* WiFiManager
-* PusSubClient
-* ?
+Neben dem [Board-Package für den ESP8266](https://randomnerdtutorials.com/how-to-install-esp8266-board-arduino-ide/) werden zusätzlich noch folgende Libs für den Bau benötigt:
+* [ArduinoJSON](https://github.com/bblanchon/ArduinoJson) >=6
+* [WiFiManager](https://github.com/tzapu/WiFiManager)
+* [PubSubClient](https://github.com/knolleary/pubsubclient)
 
 # Pin-Belegung Lolin/Wemos D1 mini
 e-Paper HAT|GPIO|Wemos D1
