@@ -5,6 +5,7 @@
 - TLS and login credentials support
 - don't check if OTA update is available after deep-sleep
 - 5 min timeout for wifiManager setup
+- 7in5 display did not sleep
 
 ## Version v17
 

@@ -51,13 +51,13 @@ static void EPD_7IN5_V2_Show(void)
 {
   EPD_SendCommand(0x12); //DISPLAY REFRESH
   delay(100);            //!!!The delay here is necessary, 200uS at least!!!
-  // EPD_7in5_V2_Readbusy();
+  EPD_7in5_V2_Readbusy();
 
-  // //Enter sleep mode
-  // EPD_SendCommand(0X02); //power off
-  // EPD_7in5_V2_Readbusy();
-  // EPD_SendCommand(0X07); //deep sleep
-  // EPD_SendData(0xA5);
+  //Enter sleep mode
+  EPD_SendCommand(0X02); //power off
+  EPD_7in5_V2_Readbusy();
+  EPD_SendCommand(0X07); //deep sleep
+  EPD_SendData(0xA5);
 }
 
 int EPD_7in5_V2_init()
