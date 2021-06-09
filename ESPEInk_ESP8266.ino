@@ -221,7 +221,7 @@ void getUpdate() {
 
 	Serial.printf(" Checking for firmware update, version file '%s'...\r\n", firmwareVersionUrl.c_str());
 	HTTPClient httpClient;
-	httpClient.begin(firmwareVersionUrl);
+	httpClient.begin(espClient, firmwareVersionUrl);
 	int httpCode = httpClient.GET();
 	if (httpCode == 200) {
 		String newFWVersion = httpClient.getString();
