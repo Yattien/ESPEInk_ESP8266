@@ -231,7 +231,7 @@ void getUpdate() {
 			Serial.println("  Updating...");
 			String firmwareImageUrl = firmwareUrl;
 			firmwareImageUrl.concat(".bin");
-			t_httpUpdate_return ret = ESPhttpUpdate.update(firmwareImageUrl);
+			t_httpUpdate_return ret = ESPhttpUpdate.update(espClient, firmwareImageUrl);
 
 			switch (ret) {
 				case HTTP_UPDATE_FAILED:
