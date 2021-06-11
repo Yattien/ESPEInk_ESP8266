@@ -100,7 +100,6 @@ void getConfig() {
 					ctx.mqttPort = jsonDocument["mqttPort"] | 1883;
 					strlcpy(ctx.mqttUser, jsonDocument["mqttUser"] | "", sizeof ctx.mqttUser);
 					strlcpy(ctx.mqttPassword, jsonDocument["mqttPassword"] | "", sizeof ctx.mqttPassword);
-					strlcpy(ctx.mqttFingerprint, jsonDocument["mqttFingerprint"] | "", sizeof ctx.mqttFingerprint);
 					strlcpy(ctx.mqttClientName, jsonDocument["mqttClientName"] | "", sizeof ctx.mqttClientName);
 					strlcpy(ctx.mqttUpdateStatusTopic, jsonDocument["mqttUpdateStatusTopic"] | "", sizeof ctx.mqttUpdateStatusTopic);
 					strlcpy(ctx.mqttCommandTopic, jsonDocument["mqttCommandTopic"] | "", sizeof ctx.mqttCommandTopic);
@@ -156,7 +155,6 @@ void requestMqttParameters(WiFiManager *wifiManager) {
 	wifiManager->addParameter(ctx.customMqttPort);
 	wifiManager->addParameter(ctx.customMqttUser);
 	wifiManager->addParameter(ctx.customMqttPassword);
-	wifiManager->addParameter(ctx.customMqttFingerprint);
 	wifiManager->addParameter(ctx.customMqttUpdateStatusTopic);
 	wifiManager->addParameter(ctx.customMqttCommandTopic);
 	wifiManager->addParameter(ctx.customSleepTime);
@@ -177,7 +175,6 @@ void saveConfig() {
 		jsonDocument["mqttPort"] = ctx.mqttPort;
 		jsonDocument["mqttUser"] = ctx.mqttUser;
 		jsonDocument["mqttPassword"] = ctx.mqttPassword;
-		jsonDocument["mqttFingerprint"] = ctx.mqttFingerprint;
 		jsonDocument["mqttClientName"] = ctx.mqttClientName;
 		jsonDocument["mqttUpdateStatusTopic"] = ctx.mqttUpdateStatusTopic;
 		jsonDocument["mqttCommandTopic"] = ctx.mqttCommandTopic;
@@ -408,7 +405,6 @@ void callback(char* topic, byte* message, unsigned int length) {
 void reconnect() {
 	Serial.println("Connecting to MQTT...");
 	while (!mqttClient.connected()) {
-		verifyFingerprint();
 		// clientID, username, password, willTopic, willQoS, willRetain, willMessage, cleanSession
 		if (!mqttClient.connect(ctx.mqttClientName, ctx.mqttUser, ctx.mqttPassword, NULL, 0, 0, NULL, 0)) {
 			delay(1000);
@@ -419,20 +415,6 @@ void reconnect() {
 			} else {
 				Serial.printf(" Subscription to %s failed: %d\r\n", ctx.mqttUpdateStatusTopic, rc);
 			}
-		}
-	}
-}
-
-// -----------------------------------------------------------------------------------------------------
-void verifyFingerprint() {
-	if (ctx.mqttFingerprint && strlen(ctx.mqttFingerprint) > 0) {
-		if(!espClient.verify(ctx.mqttFingerprint, ctx.mqttServer)) {
-			Serial.printf("MQTT fingerprint '%s' does not match, rebooting...\r\n", ctx.mqttFingerprint);
-			Serial.flush();
-			delay(200);
-			ESP.restart();
-		} else {
-			Serial.println("MQTT fingerprint does match");
 		}
 	}
 }
