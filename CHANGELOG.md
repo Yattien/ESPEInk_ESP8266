@@ -2,11 +2,11 @@
 
 ## Version v18
 
-- TLS and login credentials support
+- MQTT login credentials support
 - don't check if OTA update is available after deep-sleep
 - 5 min timeout for wifiManager setup
 - 7in5 display did not sleep
-- Fix OTA update for ESP8266 boardpackage v3.0.0
+- support ESP8266 boardpackage v3.0.0
 
 ## Version v17
 

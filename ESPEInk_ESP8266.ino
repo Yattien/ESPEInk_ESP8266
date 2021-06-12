@@ -32,7 +32,8 @@
 
 ESP8266WebServer server(80);
 IPAddress myIP;       // IP address in your local wifi net
-WiFiClientSecure espClient;
+//WiFiClientSecure espClient;
+WiFiClient espClient;
 PubSubClient mqttClient(espClient);
 
 // -----------------------------------------------------------------------------------------------------
