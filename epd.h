@@ -178,11 +178,12 @@ void EPD_SetLutRed(byte *c25, byte *c26, byte *c27)
 /* This function is used to 'wake up" the e-Paper from the deep sleep mode ---*/
 void EPD_Reset()
 {
-    digitalWrite(RST_PIN, LOW);
-    delay(200);
-
     digitalWrite(RST_PIN, HIGH);
-    delay(200);
+    delay(50);
+    digitalWrite(RST_PIN, LOW);
+    delay(5);
+    digitalWrite(RST_PIN, HIGH);
+    delay(50);
 }
 
 /* e-Paper initialization functions ------------------------------------------*/
@@ -192,6 +193,7 @@ void EPD_Reset()
 #include "epd2in7.h"
 #include "epd2in66.h"
 #include "epd3in7.h"
+#include "epd4in01f.h"
 #include "epd4in2.h"
 #include "epd5in65f.h"
 #include "epd5in83.h"
@@ -543,39 +545,45 @@ struct EPD_dispInfo
 
 /* Array of sets describing the usage of e-Papers ----------------------------*/
 EPD_dispInfo EPD_dispMass[] = {
-    {EPD_Init_1in54,		EPD_loadA, 	-1,		0, 				EPD_showA,			"1.54 inch"},	// a 0
-    {EPD_Init_1in54b,		EPD_loadB,0x13, 	EPD_loadA,		EPD_showB, 			"1.54 inch b"},	// b 1
-    {EPD_Init_1in54c,		EPD_loadA,0x13, 	EPD_loadA, 		EPD_showB, 			"1.54 inch c"},	// c 2
-    {EPD_Init_2in13,		EPD_loadC, 	-1, 	0, 				EPD_showA, 			"2.13 inch"},	// d 3
-    {EPD_Init_2in13b,		EPD_loadA,0x13, 	EPD_loadA, 		EPD_showB, 			"2.13 inch b"},	// e 4
-    {EPD_Init_2in13b,		EPD_loadA,0x13, 	EPD_loadA, 		EPD_showB, 			"2.13 inch c"},	// f 5
-    {EPD_Init_2in13d, 		EPD_loadA, 	-1, 	0, 				EPD_showD, 			"2.13 inch d"},	// g 6
-    {EPD_Init_2in7, 		EPD_loadA, 	-1, 	0, 				EPD_showB, 			"2.7 inch"},	// h 7
-    {EPD_Init_2in7b, 		EPD_loadA,0x13, 	EPD_loadA, 		EPD_showB, 			"2.7 inch b"},	// i 8
-    {EPD_Init_2in9, 		EPD_loadA, 	-1,	 	0, 				EPD_showA, 			"2.9 inch"},	// j 9
-    {EPD_Init_2in9b, 		EPD_loadA,0x13, 	EPD_loadA, 		EPD_showB, 			"2.9 inch b"},	// k 10
-    {EPD_Init_2in9b, 		EPD_loadA,0x13, 	EPD_loadA, 		EPD_showB, 			"2.9 inch c"},	// l 11
-    {EPD_Init_2in9d, 		EPD_loadA, 	-1, 	0, 				EPD_2IN9D_Show,		"2.9 inch d"},	// l 12
-    {EPD_Init_4in2, 		EPD_loadA, 	-1,	 	0, 				EPD_showB, 			"4.2 inch"},	// m 13
-    {EPD_Init_4in2b, 		EPD_loadA,0x13, 	EPD_loadA, 		EPD_showB, 			"4.2 inch b"},	// n 14
-    {EPD_Init_4in2b, 		EPD_loadA,0x13, 	EPD_loadA,		EPD_showB, 			"4.2 inch c"},	// o 15
-    {EPD_5in83__init, 		EPD_loadD, 	-1,		0, 				EPD_showC, 			"5.83 inch"},	// p 16
-    {EPD_5in83b__init, 		EPD_loadE, 	-1,		0, 				EPD_showC,			"5.83 inch b"},	// q 17
-    {EPD_5in83b__init, 		EPD_loadE, 	-1,		0, 				EPD_showC, 			"5.83 inch c"},	// r 18
-    {EPD_7in5__init, 		EPD_loadD, 	-1,		0, 				EPD_showC, 			"7.5 inch"},	// s 19
-    {EPD_7in5__init, 		EPD_loadE,	-1,		0,				EPD_showC, 			"7.5 inch b"},	// t 20
-    {EPD_7in5__init, 		EPD_loadE, 	-1, 	0, 				EPD_showC, 			"7.5 inch c"},	// u 21
-    {EPD_7in5_V2_init,		EPD_loadAFilp,-1, 	0,				EPD_7IN5_V2_Show,	"7.5 inch V2"},	// w 22
-    {EPD_7in5B_V2_Init,	 	EPD_loadA,0x13, 	EPD_loadAFilp, 	EPD_7IN5_V2_Show,	"7.5 inch B V2 "}, // x 23
-	{EPD_7IN5B_HD_init, 	EPD_loadA,0X26, 	EPD_loadAFilp, 	EPD_7IN5B_HD_Show,	"7.5 inch B HD "}, // y 24
-	{EPD_5IN65F_init,		EPD_loadG,	-1,		0,				EPD_5IN65F_Show,	"5.65 inch F "	}, // z 25
-	{EPD_7IN5_HD_init,		EPD_loadA,	-1,		0,				EPD_7IN5_HD_Show,	"7.5 inch HD"	}, // A 26
-	{EPD_3IN7_1Gray_Init,	EPD_loadA,	-1,		0,				EPD_3IN7_1Gray_Show,"3.7 inch"		},	// 27
-	{EPD_2IN66_Init,		EPD_loadA,	-1,		0,				EPD_2IN66_Show,		"2.66 inch"		},	// 28
-	{EPD_5in83b_V2_init,	EPD_loadA,0x13,		EPD_loadAFilp,	EPD_showC,			"5.83 inch B V2"},	// 29
-	{EPD_Init_2in9b_V2,		EPD_loadA,0x13,		EPD_loadA,		EPD_showC,			"2.9 inch B V2"	},	// 30
-	{EPD_1IN54B_V2_Init,	EPD_loadA,0x26,		EPD_loadAFilp,	EPD_1IN54B_V2_Show,	"1.54 inch B V2"},	// 31
-	{EPD_2IN13B_V3_Init,	EPD_loadA,0x13,		EPD_loadA,		EPD_2IN13B_V3_Show,	"2.13 inch B V3"},	// 32
+    {EPD_Init_1in54,		EPD_loadA,		-1,			0, 				EPD_showA,			"1.54 inch"		},	// a 0
+    {EPD_Init_1in54b,		EPD_loadB,		0x13, 		EPD_loadA,		EPD_showB, 			"1.54 inch b"	},	// b 1
+    {EPD_Init_1in54c,		EPD_loadA,		0x13, 		EPD_loadA, 		EPD_showB, 			"1.54 inch c"	},	// c 2
+    {EPD_Init_2in13,		EPD_loadC,		-1, 		0, 				EPD_showA, 			"2.13 inch"		},	// d 3
+    {EPD_Init_2in13b,		EPD_loadA,		0x13, 		EPD_loadA, 		EPD_showB, 			"2.13 inch b"	},	// e 4
+    {EPD_Init_2in13b,		EPD_loadA,		0x13, 		EPD_loadA, 		EPD_showB, 			"2.13 inch c"	},	// f 5
+    {EPD_Init_2in13d, 		EPD_loadA,		-1, 		0, 				EPD_showD, 			"2.13 inch d"	},	// g 6
+    {EPD_Init_2in7, 		EPD_loadA,		-1, 		0, 				EPD_showB, 			"2.7 inch"		},	// h 7
+    {EPD_Init_2in7b, 		EPD_loadA,		0x13, 		EPD_loadA, 		EPD_showB, 			"2.7 inch b"	},	// i 8
+    {EPD_Init_2in9, 		EPD_loadA,		-1,	 		0, 				EPD_showA, 			"2.9 inch"		},	// j 9
+    {EPD_Init_2in9b, 		EPD_loadA,		0x13, 		EPD_loadA, 		EPD_showB, 			"2.9 inch b"	},	// k 10
+    {EPD_Init_2in9b, 		EPD_loadA,		0x13, 		EPD_loadA, 		EPD_showB, 			"2.9 inch c"	},	// l 11
+    {EPD_Init_2in9d, 		EPD_loadA,		-1, 		0, 				EPD_2IN9D_Show,		"2.9 inch d"	},	// l 12
+    {EPD_Init_4in2, 		EPD_loadA, 		-1,	 		0, 				EPD_showB, 			"4.2 inch"		},	// m 13
+    {EPD_Init_4in2b, 		EPD_loadA,		0x13, 		EPD_loadA, 		EPD_showB, 			"4.2 inch b"	},	// n 14
+    {EPD_Init_4in2b, 		EPD_loadA,		0x13, 		EPD_loadA,		EPD_showB, 			"4.2 inch c"	},	// o 15
+    {EPD_5in83__init, 		EPD_loadD, 		-1,			0, 				EPD_showC, 			"5.83 inch"		},	// p 16
+    {EPD_5in83b__init, 		EPD_loadE, 		-1,			0, 				EPD_showC,			"5.83 inch b"	},	// q 17
+    {EPD_5in83b__init, 		EPD_loadE, 		-1,			0, 				EPD_showC, 			"5.83 inch c"	},	// r 18
+    {EPD_7in5__init, 		EPD_loadD, 		-1,			0, 				EPD_showC, 			"7.5 inch"		},	// s 19
+    {EPD_7in5__init, 		EPD_loadE,		-1,			0,				EPD_showC, 			"7.5 inch b"	},	// t 20
+    {EPD_7in5__init, 		EPD_loadE, 		-1, 		0, 				EPD_showC, 			"7.5 inch c"	},	// u 21
+    {EPD_7in5_V2_init,		EPD_loadAFilp,	-1, 		0,				EPD_7IN5_V2_Show,	"7.5 inch V2"	},	// w 22
+    {EPD_7in5B_V2_Init,	 	EPD_loadA,		0x13, 		EPD_loadAFilp, 	EPD_7IN5_V2_Show,	"7.5 inch B V2 "},	// x 23
+	{EPD_7IN5B_HD_init, 	EPD_loadA,		0X26, 		EPD_loadAFilp, 	EPD_7IN5B_HD_Show,	"7.5 inch B HD "},	// y 24
+	{EPD_5IN65F_init,		EPD_loadG,		-1,			0,				EPD_5IN65F_Show,	"5.65 inch F "	},	// z 25
+	{EPD_7IN5_HD_init,		EPD_loadA,		-1,			0,				EPD_7IN5_HD_Show,	"7.5 inch HD"	},	// A 26
+	{EPD_3IN7_1Gray_Init,	EPD_loadA,		-1,			0,				EPD_3IN7_1Gray_Show,"3.7 inch"		},	// 27
+	{EPD_2IN66_Init,		EPD_loadA,		-1,			0,				EPD_2IN66_Show,		"2.66 inch"		},	// 28
+	{EPD_5in83b_V2_init,	EPD_loadA,		0x13,		EPD_loadAFilp,	EPD_showC,			"5.83 inch B V2"},	// 29
+	{EPD_Init_2in9b_V3,		EPD_loadA,		0x13,		EPD_loadA,		EPD_showC,			"2.9 inch B V3"	},	// 30
+	{EPD_1IN54B_V2_Init,	EPD_loadA,		0x26,		EPD_loadAFilp,	EPD_1IN54B_V2_Show,	"1.54 inch B V2"},	// 31
+	{EPD_2IN13B_V3_Init,	EPD_loadA,		0x13,		EPD_loadA,		EPD_2IN13B_V3_Show,	"2.13 inch B V3"},	// 32
+	{EPD_Init_2in9_V2,		EPD_loadA,		-1,			0,				EPD_2IN9_V2_Show,	"2.9 inch V2"	},	// 33
+	{EPD_Init_4in2b_V2,		EPD_loadA,		0x13,		EPD_loadA,		EPD_4IN2B_V2_Show,	"4.2 inch B V2"	},	// 34
+	{EPD_2IN66B_Init,		EPD_loadA,		0x26,		EPD_loadAFilp,	EPD_2IN66_Show,		"2.66 inch B"	},	// 35
+	{EPD_Init_5in83_V2,		EPD_loadAFilp,	-1,			0,				EPD_showC,			"5.83 inch V2"	},	// 36
+	{EPD_4IN01F_init,		EPD_loadG,		-1,			0,				EPD_4IN01F_Show,	"4.01 inch F"	},	// 37
+	{EPD_Init_2in7b_V2,		EPD_loadA,		0x26,		EPD_loadAFilp,	EPD_Show_2in7b_V2,	"2.7 inch B V2"	},	// 38
 };
 
 /* Initialization of an e-Paper ----------------------------------------------*/

@@ -36,14 +36,10 @@ int EPD_7in5__init()
 static void EPD_7in5_V2_Readbusy(void)
 {
   Serial.print("\r\ne-Paper busy\r\n");
-  unsigned char busy;
-  do
-  {
-    EPD_SendCommand(0x71);
-    busy = digitalRead(BUSY_PIN);
-    busy = !(busy & 0x01);
-  } while (busy);
-  delay(200);
+  do{
+    delay(20);
+  }while(!(digitalRead(BUSY_PIN)));
+  delay(20);
   Serial.print("e-Paper busy release\r\n");
 }
 
@@ -51,7 +47,7 @@ static void EPD_7IN5_V2_Show(void)
 {
   EPD_SendCommand(0x12); //DISPLAY REFRESH
   delay(100);            //!!!The delay here is necessary, 200uS at least!!!
-  EPD_7in5_V2_Readbusy();
+  // EPD_7in5_V2_Readbusy();
 
   //Enter sleep mode
   EPD_SendCommand(0X02); //power off
@@ -134,6 +130,12 @@ int EPD_7in5B_V2_Init(void)
   EPD_SendCommand(0X60); //TCON SETTING
   EPD_SendData(0x22);
 
+	EPD_SendCommand(0x65);  // Resolution setting
+	EPD_SendData(0x00);
+	EPD_SendData(0x00);//800*480
+	EPD_SendData(0x00);
+	EPD_SendData(0x00);
+	
   UWORD i;
   EPD_SendCommand(0x10);
   for (i = 0; i < 800 / 8 * 480; i++)

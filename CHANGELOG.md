@@ -1,5 +1,8 @@
 # Changelog
 
+## Version v19
+- Updated waveshare code to pre-version 19.07.2021 (supports 7in5 v2)
+
 ## Version v18
 
 - MQTT login credentials support

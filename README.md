@@ -7,7 +7,7 @@ Erweiterung des ESP8266-Waveshare-Treibers um Wifi-Einrichtungsassistent, Deepsl
 ![GitHub issues](https://img.shields.io/github/issues-raw/Yattien/ESPEInk_ESP8266)
 
 # Waveshare-Treiberversion
-[29.10.2020](https://www.waveshare.com/wiki/File:E-Paper_ESP8266_Driver_Board_Code.7z)
+[19.07.2021](https://www.waveshare.com/wiki/File:E-Paper_ESP8266_Driver_Board_Code.7z)
 
 # Installation
 Das fertige Image kann per OTA (siehe auch OTA-Beispiel-Sketche) oder auch per [`esptool`](https://github.com/espressif/esptool) auf den ESP8266 geladen werden.
@@ -50,6 +50,8 @@ DIN|13|D7
 CLK|14|D5
 GND|GND|G
 VCC|3.3V|3V3
+
+Damit der ESP wieder aufwacht, muss RST und D0 mit einem Widerstand von 470 bis 1k verbunden werden (eine NodeMCU hat diesen bereits).
 
 # Bekannte Fehler
 * Das 2.13-Display funktioniert nicht mit einem "Wemos D1 mini" oder einem Clon davon im deepsleep-Mode. Grund dafür ist, dass die Reset-Leitung des Displays und die interne LED sich einen Port teilen und die LED irgendwo angesteuert wird - und sich das Display dann löscht. Falls jmd. eine Lösung hat, arbeite ich sie gern mit ein.

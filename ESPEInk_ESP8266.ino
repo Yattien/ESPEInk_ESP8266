@@ -14,7 +14,6 @@
  *                     +--------+
  */
 
-/* if the ESP does not wakeup from deepsleep a 220 resistor between SD0(MISO) and 3.3v might help */
 
 #include <WiFiManager.h>
 #include <ESP8266HTTPClient.h>
@@ -37,7 +36,7 @@ WiFiClient espClient;
 PubSubClient mqttClient(espClient);
 
 // -----------------------------------------------------------------------------------------------------
-const int FW_VERSION = 18; // for OTA
+const int FW_VERSION = 19; // for OTA
 // -----------------------------------------------------------------------------------------------------
 const char *CONFIG_FILE = "/config.json";
 const float TICKS_PER_SECOND = 80000000; // 80 MHz processor
@@ -147,7 +146,7 @@ void setupWifi() {
 		ESP.restart();
 		delay(3000);
 	}
-	Serial.println(" Connected to WiFi.");
+	Serial.printf(" Connected to WiFi, got IP address: %s\r\n", WiFi.localIP().toString().c_str());
 }
 
 // -----------------------------------------------------------------------------------------------------
