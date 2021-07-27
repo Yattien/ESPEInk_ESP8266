@@ -14,7 +14,6 @@
  *                     +--------+
  */
 
-
 #include <WiFiManager.h>
 #include <ESP8266HTTPClient.h>
 #include <ESP8266httpUpdate.h>
@@ -41,6 +40,7 @@ const int FW_VERSION = 19; // for OTA
 const char *CONFIG_FILE = "/config.json";
 const float TICKS_PER_SECOND = 80000000; // 80 MHz processor
 const int UPTIME_SEC = 10;
+const int MAX_CONNECTION_FAILURES = 1;
 
 char accessPointName[24];
 bool shouldSaveConfig = false;
@@ -65,17 +65,39 @@ void setup() {
 	initAccessPointName();
 
 	ctx.initWifiManagerParameters();
-	setupWifi();
-	ctx.updateParameters();
-	isMqttEnabled = ctx.isMqttEnabled();
+	bool wifiSetup = setupWifi();
+	if (wifiSetup) {
+		ctx.updateParameters();
+		isMqttEnabled = ctx.isMqttEnabled();
 
-	Serial.println(" Using configuration:");
-	Serial.printf("  MQTT Server: %s:%d, Client: %s\r\n", ctx.mqttServer, ctx.mqttPort, ctx.mqttClientName);
-	Serial.printf("  MQTT UpdateStatusTopic: %s\r\n", ctx.mqttUpdateStatusTopic);
-	Serial.printf("  MQTT CommandTopic: %s\r\n", ctx.mqttCommandTopic);
-	Serial.printf("  sleep time: %ld\r\n", ctx.sleepTime);
-	Serial.printf("  firmware base URL: %s\r\n", ctx.firmwareUrl);
+		Serial.println(" Using configuration:");
+		Serial.printf("  MQTT Server: %s:%d, Client: %s\r\n", ctx.mqttServer, ctx.mqttPort, ctx.mqttClientName);
+		Serial.printf("  MQTT UpdateStatusTopic: %s\r\n", ctx.mqttUpdateStatusTopic);
+		Serial.printf("  MQTT CommandTopic: %s\r\n", ctx.mqttCommandTopic);
+		Serial.printf("  sleep time: %ld\r\n", ctx.sleepTime);
+		Serial.printf("  firmware base URL: %s\r\n", ctx.firmwareUrl);
+	} else {
+		Serial.println(" Using configuration:");
+		ctx.connectionErrorCount++;
+	}
 	saveConfig();
+
+	if (!wifiSetup) {
+		if (ctx.connectionErrorCount > MAX_CONNECTION_FAILURES) {
+			Serial.printf("  Failed to connect %d times, resetting WIFI settings.");
+			ctx.connectionErrorCount = 0;
+			saveConfig();
+
+			WiFi.disconnect();
+			delay(3000);
+			ESP.restart();
+			delay(3000);
+		}
+
+		Serial.printf("\r\nFailed do connect to WIFI, going to sleep for %ld seconds.\r\n\r\n", ctx.sleepTime);
+		ESP.deepSleep(ctx.sleepTime * 1000000);
+		delay(100);
+	}
 
 	if (resetReason != "Deep-Sleep Wake") {
 		getUpdate();
@@ -105,6 +127,7 @@ void getConfig() {
 					strlcpy(ctx.mqttCommandTopic, jsonDocument["mqttCommandTopic"] | "", sizeof ctx.mqttCommandTopic);
 					ctx.sleepTime = jsonDocument["sleepTime"] | 0;
 					strlcpy(ctx.firmwareUrl, jsonDocument["firmwareUrl"] | "", sizeof ctx.firmwareUrl);
+					ctx.connectionErrorCount = jsonDocument["connectionErrorCount"] | 0;
 
 					Serial.println(" Config file read.");
 				} else {
@@ -131,22 +154,24 @@ void initMqttClientName() {
 }
 
 // -----------------------------------------------------------------------------------------------------
-void setupWifi() {
+bool setupWifi() {
 	Serial.println(" Connecting to WiFi...");
 
 	WiFiManager wifiManager;
 	wifiManager.setDebugOutput(false);
 	wifiManager.setTimeout(300);
+	wifiManager.setConfigPortalTimeout(360);
 	requestMqttParameters(&wifiManager);
 	initAccessPointName();
-	if (!wifiManager.autoConnect(accessPointName)) {
-		Serial.println("  Failed to connect, resetting.");
-		WiFi.disconnect();
-		delay(3000);
-		ESP.restart();
-		delay(3000);
+
+	bool connected = wifiManager.autoConnect(accessPointName);
+	if (!connected) {
+		Serial.println("  Failed to connect.");
+	} else {
+		Serial.printf(" Connected to WiFi, got IP address: %s\r\n", WiFi.localIP().toString().c_str());
 	}
-	Serial.printf(" Connected to WiFi, got IP address: %s\r\n", WiFi.localIP().toString().c_str());
+
+	return connected;
 }
 
 // -----------------------------------------------------------------------------------------------------
@@ -180,6 +205,7 @@ void saveConfig() {
 		jsonDocument["mqttCommandTopic"] = ctx.mqttCommandTopic;
 		jsonDocument["sleepTime"] = ctx.sleepTime;
 		jsonDocument["firmwareUrl"] = ctx.firmwareUrl;
+		jsonDocument["connectionErrorCount"] = ctx.connectionErrorCount;
 		if (serializeJson(jsonDocument, configFile) == 0) {
 			Serial.println("  Failed to write to file.");
 		}

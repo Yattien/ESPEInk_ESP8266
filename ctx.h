@@ -1,7 +1,8 @@
 class Ctx {
 public:
 	Ctx() :
-			mqttPort(1883),
+		connectionErrorCount(0),
+					mqttPort(1883),
 					sleepTime(60) {
 		memset(mqttUser, 0, 128);
 		memset(mqttPassword, 0, 128);
@@ -61,6 +62,7 @@ public:
 		return (mqttServer && strlen(mqttServer) > 0);
 	}
 
+	int connectionErrorCount;
 	char mqttServer[40];
 	char mqttPortAsString[6];
 	int mqttPort;
