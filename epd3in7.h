@@ -169,9 +169,6 @@ static void EPD_3IN7_1Gray_Show(void)
 	EPD_3IN7_ReadBusy_HIGH();  
 	Serial.print("EPD_3IN7_Show END\r\n");
 	
-	EPD_SendCommand(0X50);
-	EPD_SendData(0xf7);
-	EPD_SendCommand(0X02);   //power off
-	EPD_SendCommand(0X07);   //deep sleep
-	EPD_SendData(0xA5);
+	EPD_SendCommand(0X10);   //deep sleep
+	EPD_SendData(0x03);
 }

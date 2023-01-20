@@ -7,7 +7,7 @@ Erweiterung des ESP8266-Waveshare-Treibers um Wifi-Einrichtungsassistent, Deepsl
 ![GitHub issues](https://img.shields.io/github/issues-raw/Yattien/ESPEInk_ESP8266)
 
 # Waveshare-Treiberversion
-[19.07.2021](https://www.waveshare.com/wiki/File:E-Paper_ESP8266_Driver_Board_Code.7z)
+[07.11.2022](https://www.waveshare.com/wiki/File:E-Paper_ESP8266_Driver_Board_Code.7z)
 
 # Installation
 Das fertige Image kann per OTA (siehe auch OTA-Beispiel-Sketche) oder auch per [`esptool`](https://github.com/espressif/esptool) auf den ESP8266 geladen werden.

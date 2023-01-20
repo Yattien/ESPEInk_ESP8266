@@ -35,7 +35,7 @@ WiFiClient espClient;
 PubSubClient mqttClient(espClient);
 
 // -----------------------------------------------------------------------------------------------------
-const int FW_VERSION = 19; // for OTA
+const int FW_VERSION = 20; // for OTA
 // -----------------------------------------------------------------------------------------------------
 const char *CONFIG_FILE = "/config.json";
 const float TICKS_PER_SECOND = 80000000; // 80 MHz processor
@@ -60,13 +60,26 @@ void setup() {
 //	pinMode(LED_BUILTIN, OUTPUT); // won't work, waveshare uses D2 as DC
 //	digitalWrite(LED_BUILTIN, HIGH);
 
-	getConfig();
+	bool isConfigValid = getConfig();
 	initMqttClientName();
 	initAccessPointName();
 
 	ctx.initWifiManagerParameters();
 	bool wifiSetup = setupWifi();
 	if (wifiSetup) {
+//		// first check if there is a valid config file
+//		if (!shouldSaveConfig && !isConfigValid) {
+//			WiFi.disconnect();
+//			delay(3000);
+//
+//			WiFiManager wifiManager;
+//			wifiManager.resetSettings();
+//			wifiManager.erase(true);
+//
+//			ESP.restart();
+//			delay(3000);
+//		}
+
 		ctx.updateParameters();
 		isMqttEnabled = ctx.isMqttEnabled();
 
@@ -76,17 +89,14 @@ void setup() {
 		Serial.printf("  MQTT CommandTopic: %s\r\n", ctx.mqttCommandTopic);
 		Serial.printf("  sleep time: %ld\r\n", ctx.sleepTime);
 		Serial.printf("  firmware base URL: %s\r\n", ctx.firmwareUrl);
-	} else {
-		Serial.println(" Using configuration:");
-		ctx.connectionErrorCount++;
 	}
 	saveConfig();
 
 	if (!wifiSetup) {
+		ctx.connectionErrorCount++;
 		if (ctx.connectionErrorCount > MAX_CONNECTION_FAILURES) {
 			Serial.printf("  Failed to connect %d times, resetting WIFI settings.");
 			ctx.connectionErrorCount = 0;
-			saveConfig();
 
 			WiFi.disconnect();
 			delay(3000);
@@ -109,15 +119,20 @@ void setup() {
 }
 
 // -----------------------------------------------------------------------------------------------------
-void getConfig() {
+bool getConfig() {
+  bool configRead = true;
 	if (SPIFFS.begin()) {
 		if (SPIFFS.exists(CONFIG_FILE)) {
 			Serial.println(" Reading config file...");
 			File configFile = SPIFFS.open(CONFIG_FILE, "r");
 			if (configFile) {
-				DynamicJsonDocument jsonDocument(512);
-				DeserializationError error = deserializeJson(jsonDocument, configFile);
+				size_t size =configFile.size();
+				std::unique_ptr<char[]> buf(new char[size]);
+				configFile.readBytes(buf.get(), size);
+				DynamicJsonDocument jsonDocument(1024);
+				DeserializationError error = deserializeJson(jsonDocument, buf.get());
 				if (!error) {
+					Serial.println("  Parsed JSON config.");
 					strlcpy(ctx.mqttServer, jsonDocument["mqttServer"] | "", sizeof ctx.mqttServer);
 					ctx.mqttPort = jsonDocument["mqttPort"] | 1883;
 					strlcpy(ctx.mqttUser, jsonDocument["mqttUser"] | "", sizeof ctx.mqttUser);
@@ -130,15 +145,25 @@ void getConfig() {
 					ctx.connectionErrorCount = jsonDocument["connectionErrorCount"] | 0;
 
 					Serial.println(" Config file read.");
+					configFile.close();
+
 				} else {
-					Serial.println("  Failed to load json config.");
+					Serial.printf("  Failed to load json config: %s\r\n", error.c_str());
+					configFile.close();
+					SPIFFS.remove(CONFIG_FILE);
+					Serial.println(" Config file removed.");
+					configRead = false;
 				}
-				configFile.close();
 			}
+		} else {
+			Serial.println("  Config file not found! Using defaults.");
+			configRead = false;
 		}
 	} else {
 		Serial.println("  Failed to mount FS (probably initial start), continuing w/o config...");
 	}
+
+  return configRead;
 }
 
 // -----------------------------------------------------------------------------------------------------
@@ -168,7 +193,7 @@ bool setupWifi() {
 	if (!connected) {
 		Serial.println("  Failed to connect.");
 	} else {
-		Serial.printf(" Connected to WiFi, got IP address: %s\r\n", WiFi.localIP().toString().c_str());
+		Serial.printf("  Connected to WiFi, got IP address: %s\r\n", WiFi.localIP().toString().c_str());
 	}
 
 	return connected;
@@ -190,12 +215,17 @@ void requestMqttParameters(WiFiManager *wifiManager) {
 // -----------------------------------------------------------------------------------------------------
 void saveConfig() {
 	if (shouldSaveConfig) {
+//		if (SPIFFS.begin()) {
+//			SPIFFS.format();
+//			Serial.println(" SPIFFS formated.");
+//		}
+		
 		Serial.println(" Saving config...");
 		File configFile = SPIFFS.open(CONFIG_FILE, "w");
 		if (!configFile) {
 			Serial.println("  Failed to open config file for writing.");
 		}
-		DynamicJsonDocument jsonDocument(512);
+		DynamicJsonDocument jsonDocument(1024);
 		jsonDocument["mqttServer"] = ctx.mqttServer;
 		jsonDocument["mqttPort"] = ctx.mqttPort;
 		jsonDocument["mqttUser"] = ctx.mqttUser;
@@ -211,6 +241,9 @@ void saveConfig() {
 		}
 		configFile.close();
 		Serial.println(" Config saved.");
+		
+		serializeJson(jsonDocument, Serial);
+		Serial.println();
 	}
 }
 
@@ -429,12 +462,14 @@ void callback(char* topic, byte* message, unsigned int length) {
 
 // -----------------------------------------------------------------------------------------------------
 void reconnect() {
-	Serial.println("Connecting to MQTT...");
+	Serial.printf("Connecting to MQTT: %s:%d...\r\n", ctx.mqttServer, ctx.mqttPort);
 	while (!mqttClient.connected()) {
 		// clientID, username, password, willTopic, willQoS, willRetain, willMessage, cleanSession
 		if (!mqttClient.connect(ctx.mqttClientName, ctx.mqttUser, ctx.mqttPassword, NULL, 0, 0, NULL, 0)) {
-			delay(1000);
+			Serial.println(" Connecting failed, try reconnect in 5s.");
+			delay(5000);
 		} else {
+			Serial.println(" Connected.");
 			boolean rc = mqttClient.subscribe(ctx.mqttUpdateStatusTopic, 1);
 			if (rc) {
 				Serial.printf(" Subscribed to %s\r\n", ctx.mqttUpdateStatusTopic);

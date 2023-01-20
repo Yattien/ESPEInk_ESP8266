@@ -5,7 +5,7 @@
   * @version V1.0.0
   * @date    23-January-2018
   * @brief   This file describes initialisation of e-Papers:
-  *              2.13,
+  *              2.13 and 2.13_V3,
   *              2.13b and 2.13c,
   *              2.13d.
   *
@@ -34,6 +34,28 @@ const unsigned char lut_full_2in3v2[] = {
     0x00,0x00,0x00,0x00,0x00,                       // TP6 A~D RP6
 
     0x15,0x41,0xA8,0x32,0x30,0x0A,
+};
+
+const unsigned char WS_20_30_2IN13_V3[159] ={											
+	0x80, 0x4A,	0x40, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,
+	0x40, 0x4A,	0x80, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,
+	0x80, 0x4A,	0x40, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,
+	0x40, 0x4A,	0x80, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,
+	0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,
+	0xF, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,					
+	0xF, 0x0, 0x0, 0xF, 0x0, 0x0, 0x2,					
+	0xF, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,					
+	0x1, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,					
+	0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,					
+	0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,					
+	0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,					
+	0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,					
+	0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,					
+	0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,					
+	0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,					
+	0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,					
+	0x22, 0x22, 0x22, 0x22,	0x22, 0x22, 0x0, 0x0, 0x0,			
+	0x22, 0x17, 0x41, 0x0, 0x32, 0x36						
 };
 
 const unsigned char lut_vcomDC_2in13d[] = {
@@ -108,22 +130,81 @@ int EPD_Init_2in13()
         EPD_Send_1(0x4E, 0x00);
         EPD_Send_2(0x4F, 0xF9, 0x00);
 
-    int Width, Height;
-    Width = (122 % 8 == 0)? (122 / 8 ): (122 / 8 + 1);
-    Height = 250;
-    EPD_SendCommand(0x24);
-    for (int j = 0; j < Height; j++) {
-        for (int i = 0; i < Width; i++) {
-            EPD_SendData(0XFF);
-        }
-    }
-    EPD_SendCommand(0x22);
-    EPD_SendData(0xC7);
-    EPD_SendCommand(0x20);
-    while (digitalRead(BUSY_PIN) == 1) delay(100);
+		int Width, Height;
+		Width = (122 % 8 == 0)? (122 / 8 ): (122 / 8 + 1);
+		Height = 250;
+		EPD_SendCommand(0x24);
+		for (int j = 0; j < Height; j++) {
+			for (int i = 0; i < Width; i++) {
+				EPD_SendData(0XFF);
+			}
+		}
+		EPD_SendCommand(0x22);
+		EPD_SendData(0xC7);
+		EPD_SendCommand(0x20);
+		while (digitalRead(BUSY_PIN) == 1) delay(100);
         
         return 0;
     }
+}
+
+int EPD_Init_2in13_V3()
+{
+	Serial.print("\r\nEPD_Init_2in13 V3");
+	EPD_Reset();
+	delay(100);
+	while (digitalRead(BUSY_PIN) == 1) delay(10);
+	EPD_SendCommand(0x12);
+	while (digitalRead(BUSY_PIN) == 1) delay(10);
+	EPD_Send_3(0x01, 0XF9, 0X00, 0X00);
+	EPD_Send_1(0X11, 0X03);
+	EPD_Send_2(0X44, 0X00, 0X0F);
+	EPD_Send_4(0x45, 0x00, 0x00, 0x00, 0xF9);
+	EPD_Send_1(0x4E, 0x00);
+	EPD_Send_2(0x4F, 0X00, 0X00);
+	EPD_Send_1(0x3C, 0x05);
+	EPD_Send_2(0x21, 0x00, 0x80);
+	EPD_Send_1(0x18, 0x80);
+	
+	while (digitalRead(BUSY_PIN) == 1) delay(100);
+	int count;
+	EPD_SendCommand(0x32);
+	for(count = 0; count < 153; count++)
+		EPD_SendData(WS_20_30_2IN13_V3[count]);
+	EPD_Send_1(0x3f, WS_20_30_2IN13_V3[153]);
+	EPD_Send_1(0x03, WS_20_30_2IN13_V3[154]);
+	EPD_Send_3(0x04, WS_20_30_2IN13_V3[155], WS_20_30_2IN13_V3[156], WS_20_30_2IN13_V3[157]);
+	EPD_Send_1(0x2C, WS_20_30_2IN13_V3[158]);
+	
+	int Width, Height;
+	Width = (122 % 8 == 0)? (122 / 8 ): (122 / 8 + 1);
+	Height = 250;
+	EPD_SendCommand(0x24);
+	for (int j = 0; j < Height; j++) {
+		for (int i = 0; i < Width; i++) {
+			EPD_SendData(0XFF);
+		}
+	}
+	
+	EPD_SendCommand(0x22);
+	EPD_SendData(0xC7);
+	EPD_SendCommand(0x20);
+	while (digitalRead(BUSY_PIN) == 1) delay(10);
+	return 0;
+}
+
+/* Show image and turn to deep sleep mode ------*/
+void EPD_2IN13_V3_Show()
+{
+    Serial.print("\r\n EPD_2IN13_V3_Show");
+    // Refresh
+    EPD_Send_1(0x22, 0xC7); //DISPLAY_UPDATE_CONTROL_2
+    EPD_SendCommand(0x20);  //MASTER_ACTIVATION
+	while (digitalRead(BUSY_PIN) == 1) delay(10);
+
+    // Sleep
+    EPD_Send_1(0x10, 0x01); //DEEP_SLEEP_MODE
+    EPD_WaitUntilIdle();
 }
 
 int EPD_Init_2in13b()
@@ -173,6 +254,43 @@ void EPD_2IN13B_V3_Show()
     EPD_Send_1(0X07, 0xa5); //deep sleep
 }
 
+int EPD_2IN13B_V4_Init(void)
+{
+	EPD_Reset();
+	delay(10);
+
+	EPD_WaitUntilIdle_high();   
+	EPD_SendCommand(0x12);  //SWRESET
+	EPD_WaitUntilIdle_high();   
+
+	EPD_Send_3(0x01, 0xf9, 0x00, 0x00); //Driver output control      
+
+	EPD_Send_1(0x11, 0x03); //data entry mode       
+
+	EPD_Send_2(0X44, 0X00, 0X0F);
+	EPD_Send_4(0x45, 0x00, 0x00, 0x00, 0xF9);
+	EPD_Send_1(0x4E, 0x00);
+	EPD_Send_2(0x4F, 0X00, 0X00);
+
+	EPD_Send_1(0x3C, 0x05); //BorderWavefrom
+	EPD_Send_1(0x18, 0x80); //Read built-in temperature sensor
+	EPD_Send_2(0x21, 0x80, 0x80); //  Display update control
+
+	EPD_WaitUntilIdle_high();
+	
+	EPD_SendCommand(0x24);
+	
+	return 0;
+}
+
+void EPD_2IN13B_V4_Show()
+{
+    EPD_SendCommand(0x20);		 //DISPLAY REFRESH
+    delay(2);
+    EPD_WaitUntilIdle_high();
+	
+	EPD_Send_1(0X10, 0x01);
+}
 
 int EPD_Init_2in13d()
 {

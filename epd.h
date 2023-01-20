@@ -193,6 +193,7 @@ void EPD_Reset()
 #include "epd2in7.h"
 #include "epd2in66.h"
 #include "epd3in7.h"
+#include "epd3in52.h"
 #include "epd4in01f.h"
 #include "epd4in2.h"
 #include "epd5in65f.h"
@@ -297,10 +298,10 @@ void EPD_loadC()
     Serial.print("\r\n EPD_loadC");
     int index = 0;
     String p = server.arg(0);
-
+	// Serial.println(p);
     // Get the length of the image data begin
     int DataLength = p.length() - 8;
-
+	
     EPD_Send_2(0x44, 0, 15);        //SET_RAM_X_ADDRESS_START_END_POSITION LO(x >> 3), LO((w - 1) >> 3)
     EPD_Send_4(0x45, 0, 0, 249, 0); //SET_RAM_Y_ADDRESS_START_END_POSITION LO(y), HI(y), LO(h - 1), HI(h - 1)
 
@@ -584,6 +585,10 @@ EPD_dispInfo EPD_dispMass[] = {
 	{EPD_Init_5in83_V2,		EPD_loadAFilp,	-1,			0,				EPD_showC,			"5.83 inch V2"	},	// 36
 	{EPD_4IN01F_init,		EPD_loadG,		-1,			0,				EPD_4IN01F_Show,	"4.01 inch F"	},	// 37
 	{EPD_Init_2in7b_V2,		EPD_loadA,		0x26,		EPD_loadAFilp,	EPD_Show_2in7b_V2,	"2.7 inch B V2"	},	// 38
+	{EPD_Init_2in13_V3,		EPD_loadC,		-1, 		0, 				EPD_2IN13_V3_Show, 	"2.13 inch V3"	},	// 39
+	{EPD_2IN13B_V4_Init,	EPD_loadC,		0x26,		EPD_loadC,		EPD_2IN13B_V4_Show, "2.13 inch B V4"},	// 40
+    { EPD_3IN52_Init,	    EPD_loadA,		-1,	        0,		        EPD_3IN52_Show,     "3.52 inch"     },// 41
+    { EPD_2IN7_V2_Init,		EPD_loadA, 		-1  ,	    0,				EPD_2IN7_V2_Show,	"2.7 inch V2"	},// 42
 };
 
 /* Initialization of an e-Paper ----------------------------------------------*/

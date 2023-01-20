@@ -1,0 +1,1 @@
+{"mqttServer":"192.168.1.6","mqttPort":1883,"mqttUser":"","mqttPassword":"","mqttClientName":"ESPEInk_ecfabcc5ba9d","mqttUpdateStatusTopic":"stat/doorDisplay/needUpdate","mqttCommandTopic":"cmd/doorDisplay/upload","sleepTime":60,"firmwareUrl":"","connectionErrorCount":0}
