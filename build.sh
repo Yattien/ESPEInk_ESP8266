@@ -1,26 +1,24 @@
 #!/bin/bash
 
 ARDUINO_RUNTIME=~/.arduino15
-ARDUINO_HOME=/opt/arduino-1.8.15
+ARDUINO_HOME=/usr/share/arduino
 INO_FILE=ESPEInk_ESP8266.ino
 LIBRARY_PATH=~/Arduino/libraries
 BOARD_DEFINITION="esp8266:esp8266:nodemcuv2:xtal=80,vt=flash,exception=disabled,stacksmash=disabled,ssl=all,mmu=3232,non32xfer=fast,eesz=4M2M,led=2,ip=lm2f,dbg=Disabled,lvl=None____,wipe=none,baud=115200"
-TOOL_VERSION=3.0.3-gcc10.3-9bcba0b
+TOOL_VERSION=3.1.0-gcc10.3-e5f9fec
 FS_VERSION=${FS_VERSION}
-IDE_VERSION=10815
+IDE_VERSION=10819
 
 # prepare
 mkdir -p /tmp/ESP8266/cache
 
 # build
-${ARDUINO_HOME}/arduino-builder \
+arduino-builder \
 	-dump-prefs \
 	-hardware ${ARDUINO_HOME}/hardware \
 	-hardware ${ARDUINO_RUNTIME}/packages \
-	-tools ${ARDUINO_HOME}/tools-builder \
 	-tools ${ARDUINO_HOME}/hardware/tools/avr \
 	-tools ${ARDUINO_RUNTIME}/packages \
-	-built-in-libraries ${ARDUINO_HOME}/libraries \
 	-libraries ${LIBRARY_PATH} \
 	-fqbn=${BOARD_DEFINITION} \
 	-ide-version=${IDE_VERSION} \
@@ -39,14 +37,12 @@ ${ARDUINO_HOME}/arduino-builder \
 	-verbose \
 	${INO_FILE}
 
-${ARDUINO_HOME}/arduino-builder \
+arduino-builder \
 	-compile \
 	-hardware ${ARDUINO_HOME}/hardware \
 	-hardware ${ARDUINO_RUNTIME}/packages \
-	-tools ${ARDUINO_HOME}/tools-builder \
 	-tools ${ARDUINO_HOME}/hardware/tools/avr \
 	-tools ${ARDUINO_RUNTIME}/packages \
-	-built-in-libraries ${ARDUINO_HOME}/libraries \
 	-libraries ${LIBRARY_PATH} \
 	-fqbn=${BOARD_DEFINITION} \
 	-ide-version=${IDE_VERSION} \
@@ -66,5 +62,10 @@ ${ARDUINO_HOME}/arduino-builder \
 	${INO_FILE}
 
 # upload to local firmware server "volker"
+echo
+echo "uploading to firmware server..."
 scp /tmp/ESP8266/ESPEInk_ESP8266.ino.bin volker:
+
+echo
+echo "compressing image..."
 gzip -f /tmp/ESP8266/ESPEInk_ESP8266.ino.bin

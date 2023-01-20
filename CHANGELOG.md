@@ -1,5 +1,8 @@
 # Changelog
 
+## Version 21
+- updated build environment
+
 ## Version 20
 - Do not reset WiFi settings for MAX_CONNECTION_FAILURES, default is one try
 - Updated waveshare code to 07.11.2022 (supports 2in13 v3, 2in13b v4, 3in52, 2in7 v2)
