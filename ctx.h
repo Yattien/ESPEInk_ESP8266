@@ -40,8 +40,8 @@ public:
 		customMqttServer = new WiFiManagerParameter("server", "MQTT server", mqttServer, 40);
 		itoa(mqttPort, mqttPortAsString, 10);
 		customMqttPort = new WiFiManagerParameter("port", "MQTT port", mqttPortAsString, 6);
-		customMqttUser = new WiFiManagerParameter("MQTT user", "MQTT user name", mqttUser, 128);
-		customMqttPassword = new WiFiManagerParameter("MQTT password", "MQTT password", mqttPassword, 128);
+		customMqttUser = new WiFiManagerParameter("mqttUser", "MQTT user name", mqttUser, 128);
+		customMqttPassword = new WiFiManagerParameter("mqttPassword", "MQTT password", mqttPassword, 128);
 		customMqttUpdateStatusTopic = new WiFiManagerParameter("updateTopic", "MQTT update topic", mqttUpdateStatusTopic, 128);
 		customMqttCommandTopic = new WiFiManagerParameter("commandTopic", "MQTT command topic", mqttCommandTopic, 128);
 		itoa(sleepTime, sleepTimeAsString, 10);
