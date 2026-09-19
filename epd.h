@@ -589,6 +589,7 @@ EPD_dispInfo EPD_dispMass[] = {
 	{EPD_2IN13B_V4_Init,	EPD_loadC,		0x26,		EPD_loadC,		EPD_2IN13B_V4_Show, "2.13 inch B V4"},	// 40
     { EPD_3IN52_Init,	    EPD_loadA,		-1,	        0,		        EPD_3IN52_Show,     "3.52 inch"     },// 41
     { EPD_2IN7_V2_Init,		EPD_loadA, 		-1  ,	    0,				EPD_2IN7_V2_Show,	"2.7 inch V2"	},// 42
+    { EPD_Init_2in13_V4,	EPD_loadC, 		-1  ,	    0,				EPD_2IN13_V4_Show,	"2.13 inch V4"	},// 43
 };
 
 /* Initialization of an e-Paper ----------------------------------------------*/

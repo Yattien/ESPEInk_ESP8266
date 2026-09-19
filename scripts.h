@@ -90,7 +90,8 @@ server.send(200, "text/javascript",
 "[200,200,1],[104,214,1],[128,296,0],\r\n"
 "[400,300,1],[152,296,1],[648,480,0],\r\n"
 "[640,400,7],[176,264,1],[122,250,0],\r\n"
-"[122,250,1],[240,360,0],[176,264,0]];\r\n"
+"[122,250,1],[240,360,0],[176,264,0],\r\n"
+"[122,250,0]];\r\n"
 
 "setInn('BT',\r\n"
 "Btn(0,'Select image file','processFiles(this.files);')+\r\n"
@@ -119,7 +120,8 @@ server.send(200, "text/javascript",
 "RB(35,'2.66b&ensp;')+RB(36,'5.83 V2<br>')+\r\n"
 "RB(37,'4.01 f&ensp;')+RB(38,'2.7b V2<br>')+\r\n"
 "RB(39,'2.13 V3&ensp;')+RB(40,'2.13 B V4<br>')+\r\n"
-"RB(41,'3.52&ensp;')+RB(42,'2.7 V2'));\r\n"
+"RB(41,'3.52&ensp;')+RB(42,'2.7 V2<br>')+\r\n"
+"RB(43,'2.13 V4&ensp;'));\r\n"
 "}\r\n"
 //-------------------------------------------
 "function rbClick(index){\r\n"
@@ -453,7 +455,7 @@ server.send(200, "text/javascript",
     "rqPrf='http://'+getElm('ip_addr').value+'/';\r\n"
     "var init='EPD';\r\n"
 
-    "if ((epdInd==3)  || (epdInd==39) ){\r\n"  
+    "if ((epdInd==3)  || (epdInd==39) || (epdInd==43)){\r\n"  
         "xhReq.onload=xhReq.onerror = function(){\r\n"
             "ldPrv();\r\n"
             "if(stInd==0)return u_dataB(a,0,0,100);\r\n"

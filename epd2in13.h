@@ -207,6 +207,60 @@ void EPD_2IN13_V3_Show()
     EPD_WaitUntilIdle();
 }
 
+
+int EPD_Init_2in13_V4()
+{
+	Serial.print("\r\nEPD_Init_2in13 V4");
+	EPD_Reset();
+	delay(100);
+
+	while (digitalRead(BUSY_PIN) == 1) delay(10);
+	EPD_SendCommand(0x12);
+	while (digitalRead(BUSY_PIN) == 1) delay(10);
+
+	EPD_Send_3(0x01, 0XF9, 0X00, 0X00);
+	EPD_Send_1(0X11, 0X03);
+	EPD_Send_2(0X44, 0X00, 0X0F);
+	EPD_Send_4(0x45, 0x00, 0x00, 0x00, 0xF9);
+	EPD_Send_1(0x4E, 0x00);
+	EPD_Send_2(0x4F, 0X00, 0X00);
+	EPD_Send_1(0x3C, 0x05);
+	EPD_Send_2(0x21, 0x00, 0x80);
+	EPD_Send_1(0x18, 0x80);
+	while (digitalRead(BUSY_PIN) == 1) delay(10);
+
+	int Width, Height;
+	Width = (122 % 8 == 0)? (122 / 8 ): (122 / 8 + 1);
+	Height = 250;
+	EPD_SendCommand(0x24);
+	for (int j = 0; j < Height; j++) {
+		for (int i = 0; i < Width; i++) {
+			EPD_SendData(0XFF);
+		}
+	}
+	
+	EPD_SendCommand(0x22);
+	EPD_SendData(0xF7);
+	EPD_SendCommand(0x20);
+
+	while (digitalRead(BUSY_PIN) == 1) delay(10);
+	return 0;
+}
+
+/* Show image and turn to deep sleep mode ------*/
+void EPD_2IN13_V4_Show()
+{
+    Serial.print("\r\n EPD_2IN13_V4_Show");
+    // Refresh
+    EPD_Send_1(0x22, 0xF7); //DISPLAY_UPDATE_CONTROL_2
+    EPD_SendCommand(0x20);  //MASTER_ACTIVATION
+	while (digitalRead(BUSY_PIN) == 1) delay(10);
+
+    // Sleep
+    EPD_Send_1(0x10, 0x01); //DEEP_SLEEP_MODE
+    EPD_WaitUntilIdle();
+}
+
 int EPD_Init_2in13b()
 {
     EPD_Reset();
