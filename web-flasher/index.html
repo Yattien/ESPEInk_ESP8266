@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ESPEInk ESP8266 – Firmware-Installer</title>
+  <script type="module" src="https://unpkg.com/esp-web-tools@10.1.1/dist/web/install-button.js?module"></script>
+  <style>
+    :root { color-scheme: dark; font-family: system-ui, sans-serif; background: #101820; color: #e9f1f5; }
+    * { box-sizing: border-box; }
+    html { min-height: 100%; background: #101820; }
+    body { min-height: 100vh; max-width: 760px; margin: 0 auto; padding: clamp(1.5rem, 8vh, 5rem) 1.25rem; background: #101820; }
+    main { padding: clamp(1.5rem, 5vw, 3rem); border: 1px solid #324553; border-radius: 1.25rem; background: #172630; box-shadow: 0 1.5rem 5rem #0005; }
+    h1 { margin-top: 0; font-size: clamp(2rem, 6vw, 3rem); }
+    p { color: #b9cbd4; line-height: 1.65; }
+    esp-web-install-button { display: inline-block; margin: 1.25rem 0; --esp-tools-button-color: #51d6a5; --esp-tools-button-text-color: #0c2119; --esp-tools-button-border-radius: .7rem; }
+    .note { padding: 1rem; border-left: 3px solid #51d6a5; background: #0e1a20; border-radius: .4rem; }
+  </style>
+</head>
+<body>
+  <main>
+    <p>ESPEInk · Firmware-Werkzeug</p>
+    <h1>ESP8266 flashen</h1>
+    <p>Verbinde den Waveshare-ESP8266 per USB, öffne diese Seite in Chrome und wähle den seriellen Adapter.</p>
+    <esp-web-install-button manifest="manifest.json">
+      <button slot="activate">Gerät verbinden und Firmware installieren</button>
+      <span slot="unsupported">Dieser Browser unterstützt Web Serial nicht. Bitte Chrome oder Edge über HTTPS verwenden.</span>
+      <span slot="not-allowed">Der Installer muss über HTTPS oder localhost geöffnet werden.</span>
+    </esp-web-install-button>
+      <p class="note">Nach dem Erstflash startet ein 2,4-GHz-Setup-WLAN <strong>ESPEInk-Setup</strong> (Passwort <strong>ESPEInkSetup</strong>) auf Kanal 1 und bleibt 15 Minuten verfügbar. Verbinde dich damit und öffne <code>http://192.168.4.1</code>. Bei Updates im Installer <strong>Erase device</strong> nicht auswählen, damit WLAN-Konfiguration und LittleFS erhalten bleiben. Für Deep Sleep GPIO16 mit RESET verbinden.</p>
+  </main>
+</body>
+</html>

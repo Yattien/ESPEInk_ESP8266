@@ -1,0 +1,24 @@
+name: Build firmware
+
+on:
+  push:
+    branches: [master, "ng/**"]
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.x"
+      - uses: actions/cache@v6
+        with:
+          path: ~/.platformio
+          key: platformio-${{ runner.os }}-${{ hashFiles('platformio.ini') }}
+          restore-keys: platformio-${{ runner.os }}-
+      - name: Install PlatformIO
+        run: python -m pip install platformio
+      - name: Build ESP8266 firmware
+        run: pio run -e esp12e

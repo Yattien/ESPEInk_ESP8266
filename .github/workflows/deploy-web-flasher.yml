@@ -1,0 +1,59 @@
+name: Deploy browser flasher
+
+on:
+  push:
+    branches: [master, "ng/**"]
+    paths:
+      - "src/**"
+      - "vendor/Loader/**"
+      - "platformio.ini"
+      - "Pipfile"
+      - "Pipfile.lock"
+      - "web-flasher/**"
+      - ".github/workflows/deploy-web-flasher.yml"
+      - ".github/workflows/build-release.yml"
+  workflow_dispatch:
+
+concurrency:
+  group: github-pages
+  cancel-in-progress: true
+
+jobs:
+  prepare:
+    permissions:
+      contents: read
+      pages: write
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+      - uses: actions/cache@v6
+        with:
+          path: ~/.platformio
+          key: platformio-${{ runner.os }}-${{ hashFiles('platformio.ini', 'Pipfile.lock') }}
+          restore-keys: platformio-${{ runner.os }}-
+      - name: Install PlatformIO
+        run: python -m pip install platformio
+      - name: Build firmware for the web flasher
+        run: pio run -e esp12e
+      - name: Add firmware to Pages artifact
+        run: cp .pio/build/esp12e/firmware.bin web-flasher/firmware.bin
+      - uses: actions/configure-pages@v6
+      - uses: actions/upload-pages-artifact@v5
+        with:
+          path: web-flasher
+
+  deploy:
+    needs: prepare
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v5
